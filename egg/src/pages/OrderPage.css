@@ -1,175 +1,392 @@
-/* OrderPage.css */
+// src/pages/OrderPage.jsx
+import React, { useState, useEffect } from "react";
+import "./OrderPage.css";
+import { addOrder } from "../firebase"; // 新增訂單到 Firestore
 
-/* 整個頁面最外層容器 */
-.order-page-container {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 12px;
-}
+const FLAVORS = ["起士", "奧利奧", "黑糖"];
 
-/* 頁面大標題 */
-.page-title {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
+export default function OrderPage() {
+  // ──────────────────────────────────────────
+  // 一、State
+  // ──────────────────────────────────────────
 
-/* 每個分區的間距 */
-.form-group {
-  margin-bottom: 16px;
-}
+  // (1) 使用者正在填的「目前這一筆」：
+  const [itemType, setItemType] = useState("原味"); // 原味｜特價綜合｜內餡
+  const [plainCount, setPlainCount] = useState(1); // 只用於 type==="原味"
+  const [comboCounts, setComboCounts] = useState({
+    起士: 0,
+    奧利奧: 0,
+    黑糖: 0,
+  }); // 只用於 type==="特價綜合"
+  const [fillingCounts, setFillingCounts] = useState({
+    起士: 0,
+    奧利奧: 0,
+    黑糖: 0,
+  }); // 只用於 type==="內餡"
+  const [note, setNote] = useState(""); // 備註
 
-/* 下拉選單樣式 */
-.select-item-type {
-  margin-left: 8px;
-  font-size: 14px;
-  padding: 4px 8px;
-}
+  // (2) 暫存區：把使用者「確認新增」的多筆項目存在這裡
+  //   結構同一筆 orderData，但不會寫入 FIRESTORE，等 user 「送出」再一次同步
+  const [tempOrders, setTempOrders] = useState([]);
 
-/* 數字輸入欄（原味份數） */
-.input-number {
-  margin-left: 8px;
-  width: 60px;
-  font-size: 14px;
-  padding: 4px 6px;
-}
+  // (3) 當前 UI：選完一筆可以「直接送出」或「確認新增」
+  //     comboTotal、fillingTotal 用來判斷是否正好 3
+  const comboTotal = Object.values(comboCounts).reduce((a, b) => a + b, 0);
+  const fillingTotal = Object.values(fillingCounts).reduce((a, b) => a + b, 0);
 
-/* 備註輸入框 */
-.input-textarea {
-  display: block;
-  width: 100%;
-  min-height: 60px;
-  margin-top: 6px;
-  font-size: 14px;
-  padding: 6px 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  resize: vertical; /* 可以上下拉長 */
-}
+  // ──────────────────────────────────────────
+  // 二、輔助函式：處理加減、加入暫存、直接送出
+  // ──────────────────────────────────────────
 
-/* 口味按鈕容器 */
-.flavor-buttons-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 4px;
-}
+  // (A) 「特價綜合／內餡」的口味 +1
+  const handleClickComboFlavor = (flavor) => {
+    if (comboTotal >= 3) return;
+    setComboCounts((prev) => ({
+      ...prev,
+      [flavor]: prev[flavor] + 1,
+    }));
+  };
+  const handleClickFillingFlavor = (flavor) => {
+    if (fillingTotal >= 3) return;
+    setFillingCounts((prev) => ({
+      ...prev,
+      [flavor]: prev[flavor] + 1,
+    }));
+  };
 
-/* 單一口味按鈕 */
-.flavor-btn {
-  background-color: #e0e0e0;
-  border: none;
-  border-radius: 12px;
-  padding: 6px 12px;
-  font-size: 14px;
-  position: relative;
-  cursor: pointer;
-}
+  // (B) 減少某口味（可選擇實作或不做）
+  const handleRemoveComboFlavor = (flavor) => {
+    if (comboCounts[flavor] <= 0) return;
+    setComboCounts((prev) => ({
+      ...prev,
+      [flavor]: prev[flavor] - 1,
+    }));
+  };
+  const handleRemoveFillingFlavor = (flavor) => {
+    if (fillingCounts[flavor] <= 0) return;
+    setFillingCounts((prev) => ({
+      ...prev,
+      [flavor]: prev[flavor] - 1,
+    }));
+  };
 
-/* 被選擇時改變顏色 */
-.flavor-selected {
-  background-color: #ffd54f;
-  color: #000;
-}
+  // (C) 加入暫存：按「確認新增」時，先驗證項目是否正確，再存到 tempOrders
+  const handleConfirmAdd = () => {
+    let newItem = null;
 
-/* 顯示「× N」口味數量的小徽章 */
-.flavor-count {
-  font-size: 12px;
-  font-weight: 600;
-  color: #333;
-  margin-left: 4px;
-}
+    if (itemType === "原味") {
+      if (plainCount < 1) {
+        alert("請輸入至少 1 份原味雞蛋糕");
+        return;
+      }
+      newItem = {
+        type: "原味",
+        plainCount,
+        note: note.trim(),
+      };
+    } else if (itemType === "特價綜合") {
+      if (comboTotal !== 3) {
+        alert("特價綜合雞蛋糕請選擇剛好 3 顆口味");
+        return;
+      }
+      newItem = {
+        type: "特價綜合",
+        comboCounts: { ...comboCounts },
+        note: note.trim(),
+      };
+    } else if (itemType === "內餡") {
+      if (fillingTotal !== 3) {
+        alert("內餡雞蛋糕請選擇剛好 3 顆口味");
+        return;
+      }
+      newItem = {
+        type: "內餡",
+        fillingCounts: { ...fillingCounts },
+        note: note.trim(),
+      };
+    }
 
-/* 「加入購物車」與「送出訂單」按鈕區塊 */
-.order-action-buttons {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  margin-top: 8px;
-  flex-wrap: wrap;
-}
+    // 把這筆 newItem 推到 tempOrders
+    setTempOrders((prev) => [...prev, newItem]);
 
-/* 加入購物車按鈕 */
-.btn-add-to-cart {
-  background-color: #ffb300;
-  color: #fff;
-  border: none;
-  border-radius: 20px;
-  padding: 10px 16px;
-  font-size: 14px;
-  flex: 1;
-  max-width: 140px;
-  cursor: pointer;
-}
+    // 加入後，把表單全部重置
+    setItemType("原味");
+    setPlainCount(1);
+    setComboCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
+    setFillingCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
+    setNote("");
+  };
 
-/* 送出訂單按鈕 */
-.btn-submit-cart {
-  background-color: #03a9f4;
-  color: #fff;
-  border: none;
-  border-radius: 20px;
-  padding: 10px 16px;
-  font-size: 14px;
-  flex: 1;
-  max-width: 140px;
-  cursor: pointer;
-}
+  // (D) 直接送出：將目前這一筆立刻寫到 Firestore
+  const handleDirectSend = async () => {
+    let payload = null;
 
-/* 購物車區塊 */
-.cart-container {
-  margin-top: 20px;
-  padding: 8px;
-  border-top: 1px solid #ddd;
-}
+    if (itemType === "原味") {
+      if (plainCount < 1) {
+        alert("請輸入至少 1 份原味雞蛋糕");
+        return;
+      }
+      payload = {
+        type: "原味",
+        plainCount,
+        note: note.trim(),
+      };
+    } else if (itemType === "特價綜合") {
+      if (comboTotal !== 3) {
+        alert("特價綜合雞蛋糕請選擇剛好 3 顆口味");
+        return;
+      }
+      payload = {
+        type: "特價綜合",
+        comboCounts: { ...comboCounts },
+        note: note.trim(),
+      };
+    } else if (itemType === "內餡") {
+      if (fillingTotal !== 3) {
+        alert("內餡雞蛋糕請選擇剛好 3 顆口味");
+        return;
+      }
+      payload = {
+        type: "內餡",
+        fillingCounts: { ...fillingCounts },
+        note: note.trim(),
+      };
+    }
 
-/* 購物車裡每個項目的卡片 */
-.cart-item-card {
-  background-color: #fafafa;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin-bottom: 8px;
-  position: relative;
-}
+    try {
+      await addOrder(payload);
+      alert("已直接送出到廚房！");
+      // 寫完後，清空表單
+      setItemType("原味");
+      setPlainCount(1);
+      setComboCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
+      setFillingCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
+      setNote("");
+    } catch (err) {
+      console.error(err);
+      alert("直接送出失敗，請稍後重試");
+    }
+  };
 
-/* 購物車中「備註」文字樣式 */
-.cart-note {
-  margin: 4px 0 0 0;
-  font-size: 13px;
-  color: #555;
-  font-style: italic;
-}
+  // (E) 把 tempOrders 一次送出：寫到 Firestore，status 皆為 "pending"
+  const handleSubmitAllTemp = async () => {
+    if (tempOrders.length === 0) {
+      alert("暫存區沒有訂單");
+      return;
+    }
+    try {
+      // 一筆一筆寫入
+      for (let item of tempOrders) {
+        await addOrder(item);
+      }
+      alert("所有暫存訂單已送出廚房！");
+      setTempOrders([]); // 清空暫存
+    } catch (err) {
+      console.error(err);
+      alert("送出暫存訂單時發生錯誤，請重試");
+    }
+  };
 
-/* 購物車內「刪除」按鈕 */
-.btn-remove-cart-item {
-  position: absolute;
-  right: 8px;
-  top: 8px;
-  background-color: #f44336;
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 4px 8px;
-  font-size: 12px;
-  cursor: pointer;
-}
+  // (F) 刪除暫存某一筆
+  const handleRemoveTemp = (idx) => {
+    setTempOrders((prev) => prev.filter((_, i) => i !== idx));
+  };
 
-/* 手機螢幕特別調整 */
-@media screen and (max-width: 480px) {
-  .btn-add-to-cart,
-  .btn-submit-cart {
-    font-size: 12px;
-    padding: 8px 12px;
-  }
-  .flavor-btn {
-    font-size: 12px;
-    padding: 4px 10px;
-  }
-  .input-number {
-    width: 50px;
-    font-size: 12px;
-  }
-  .input-textarea {
-    font-size: 12px;
-  }
+  // (G) 減少「特價綜合／內餡」口味數量的方法
+  //     如果要強制出現「－」按鈕，就同時給予減法 handler
+  //     但這段可選，要不提供「長按口味按鈕」減少，這裡就不勾選減按鈕。
+
+  // ──────────────────────────────────────────
+  // 三、渲染 UI
+  // ──────────────────────────────────────────
+  return (
+    <div className="order-page-container">
+      <h1 className="page-title">🔍 選擇餐點</h1>
+
+      {/* （1）選擇餐點種類 按鈕群 */}
+      <div className="item-type-buttons">
+        <button
+          className={`item-type-btn ${
+            itemType === "特價綜合" ? "active" : ""
+          }`}
+          onClick={() => setItemType("特價綜合")}
+        >
+          特價綜合雞蛋糕
+        </button>
+        <button
+          className={`item-type-btn ${itemType === "內餡" ? "active" : ""}`}
+          onClick={() => setItemType("內餡")}
+        >
+          內餡雞蛋糕
+        </button>
+        <button
+          className={`item-type-btn ${itemType === "原味" ? "active" : ""}`}
+          onClick={() => setItemType("原味")}
+        >
+          原味雞蛋糕
+        </button>
+      </div>
+
+      {/* （2）動態顯示「新增：XXX雞蛋糕」區塊 */}
+      <div className="new-item-section">
+        <h2>新增：{itemType}雞蛋糕</h2>
+
+        {/* 原味雞蛋糕 → 數量輸入 */}
+        {itemType === "原味" && (
+          <div className="form-group">
+            <label className="label-inline">
+              份數：
+              <input
+                type="number"
+                min="1"
+                value={plainCount}
+                onChange={(e) =>
+                  setPlainCount(Math.max(parseInt(e.target.value) || 1, 1))
+                }
+                className="input-number"
+              />
+            </label>
+          </div>
+        )}
+
+        {/* 特價綜合雞蛋糕 → 口味按鈕 */}
+        {itemType === "特價綜合" && (
+          <div className="form-group">
+            <p>請選擇三種口味（可重複，同口味最多 3 顆）：</p>
+            <div className="flavor-buttons-container">
+              {FLAVORS.map((fl) => (
+                <button
+                  key={fl}
+                  className={`flavor-btn ${
+                    comboCounts[fl] > 0 ? "flavor-selected" : ""
+                  }`}
+                  onClick={() => handleClickComboFlavor(fl)}
+                >
+                  {fl}
+                  {comboCounts[fl] > 0 && (
+                    <span className="flavor-count">×{comboCounts[fl]}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <p className="small-text">已選：({comboTotal}/3 顆)</p>
+          </div>
+        )}
+
+        {/* 內餡雞蛋糕 → 口味按鈕 */}
+        {itemType === "內餡" && (
+          <div className="form-group">
+            <p>請選擇三種口味（可重複，同口味最多 3 顆）：</p>
+            <div className="flavor-buttons-container">
+              {FLAVORS.map((fl) => (
+                <button
+                  key={fl}
+                  className={`flavor-btn ${
+                    fillingCounts[fl] > 0 ? "flavor-selected" : ""
+                  }`}
+                  onClick={() => handleClickFillingFlavor(fl)}
+                >
+                  {fl}
+                  {fillingCounts[fl] > 0 && (
+                    <span className="flavor-count">×{fillingCounts[fl]}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <p className="small-text">已選：({fillingTotal}/3 顆)</p>
+          </div>
+        )}
+
+        {/* （3）備註欄位 */}
+        <div className="form-group">
+          <label className="label-block">
+            輸入備註 (可空白)：
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="例如：不要加蔥、外帶單放保溫袋…"
+              className="input-textarea"
+            />
+          </label>
+        </div>
+
+        {/* （4）直接送出 vs 確認新增 */}
+        <div className="action-buttons">
+          <button className="btn-direct-send" onClick={handleDirectSend}>
+            直接送出
+          </button>
+          <button className="btn-confirm-add" onClick={handleConfirmAdd}>
+            確認新增
+          </button>
+        </div>
+      </div>
+
+      {/* （5）暫存訂單顯示區 */}
+      <div className="temp-orders-section">
+        <h2>暫存訂單顯示區</h2>
+        {tempOrders.length === 0 ? (
+          <div className="empty-note">目前沒有暫存訂單。</div>
+        ) : (
+          <ul className="temp-orders-list">
+            {tempOrders.map((item, idx) => (
+              <li key={idx} className="temp-order-card">
+                {item.type === "原味" && (
+                  <p>
+                    【原味雞蛋糕】×{item.plainCount} 份
+                    {item.note && <span>，備註：{item.note}</span>}
+                  </p>
+                )}
+                {item.type === "特價綜合" && (
+                  <div>
+                    <p>【特價綜合雞蛋糕】</p>
+                    <ul className="sub-list">
+                      {FLAVORS.map((fl) => {
+                        const cnt = item.comboCounts[fl];
+                        return cnt > 0 ? (
+                          <li key={fl}>
+                            {fl} × {cnt}
+                          </li>
+                        ) : null;
+                      })}
+                    </ul>
+                    {item.note && <p>備註：{item.note}</p>}
+                  </div>
+                )}
+                {item.type === "內餡" && (
+                  <div>
+                    <p>【內餡雞蛋糕】</p>
+                    <ul className="sub-list">
+                      {FLAVORS.map((fl) => {
+                        const cnt = item.fillingCounts[fl];
+                        return cnt > 0 ? (
+                          <li key={fl}>
+                            {fl} × {cnt}
+                          </li>
+                        ) : null;
+                      })}
+                    </ul>
+                    {item.note && <p>備註：{item.note}</p>}
+                  </div>
+                )}
+                <button
+                  className="btn-remove-temp"
+                  onClick={() => handleRemoveTemp(idx)}
+                >
+                  刪除暫存
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {tempOrders.length > 0 && (
+          <button
+            className="btn-submit-temp-all"
+            onClick={handleSubmitAllTemp}
+          >
+            🚀 送出暫存
+          </button>
+        )}
+      </div>
+    </div>
+  );
 }
