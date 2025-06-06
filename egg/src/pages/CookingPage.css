@@ -1,0 +1,88 @@
+/* CookingPage.css */
+
+.cooking-page-container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 12px;
+  font-family: "Noto Sans TC", sans-serif;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.empty-note {
+  background-color: #fce4ec;
+  color: #555;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.pending-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pending-card {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  background-color: #fafafa;
+  font-size: 14px;
+}
+
+.pending-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.pending-id {
+  font-size: 12px;
+  color: #333;
+}
+
+.sub-list {
+  list-style: disc;
+  margin: 4px 0 0 16px;
+  padding: 0;
+  font-size: 13px;
+  color: #333;
+}
+
+.pending-note {
+  font-size: 13px;
+  color: #555;
+  margin-top: 2px;
+  font-style: italic;
+}
+
+.small-text {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* 行動裝置微調 */
+@media screen and (max-width: 480px) {
+  .page-title {
+    font-size: 20px;
+  }
+  .pending-card {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  .sub-list {
+    font-size: 12px;
+    margin-left: 14px;
+  }
+  .pending-note {
+    font-size: 12px;
+  }
+}
