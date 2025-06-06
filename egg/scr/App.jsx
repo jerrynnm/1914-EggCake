@@ -22,4 +22,4 @@ export default function App() {
       </div>
     </div>
   );
-}
+} // ✅ 這行補回來！
