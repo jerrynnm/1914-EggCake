@@ -1,107 +1,41 @@
-/* 最外層容器 */
-.order-container {
-  padding: 12px;
-}
-
-/* 上方切換標籤 */
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.tab-btn {
-  flex: 1;
-  padding: 10px;
-  font-size: 16px;
-  border-radius: 20px;
-  background: #f0f0f0;
-  color: #333;
-  border: none;
-}
-.tab-btn.active {
-  background: #007bff;
-  color: #fff;
-}
-
-/* 數量選擇區 */
+/* 把數量選擇一整排，且垂直置中 */
 .selector {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: nowrap; /* 不換行 */
   margin-bottom: 12px;
-  flex-wrap: wrap;
 }
+
+/* 每個口味的小區塊 */
 .number-row {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.num-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
-  font-size: 18px;
-  background: #f0f0f0;
-  border: none;
-}
-.num-display {
-  width: 24px;
-  text-align: center;
-  font-size: 18px;
-}
 
-/* 備註輸入框 */
-.note-input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-}
-
-/* 動作按鈕排版 */
+/* 把三個主要操作放一排 */
 .actions-row {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
   margin-bottom: 12px;
-}
-.action-btn {
-  flex: 1;
-  padding: 14px 0;
-  font-size: 16px;
-  border: none;
-  border-radius: 8px;
-  background: #e0e0e0;
-  color: #333;
-}
-.action-btn.direct {
-  background: #007bff;
-  color: #fff;
-}
-.action-btn.cart {
-  background: #ffc107;
-  color: #333;
-}
-.action-btn.send {
-  background: #28a745;
-  color: #fff;
-}
-.action-btn.clear {
-  background: #dc3545;
-  color: #fff;
+  flex-wrap: wrap; /* 螢幕寬度不足時會換下一行 */
 }
 
-/* 購物車清單 */
-.cart-list {
+/* 把購物車送出/刪除兩個按鈕也擺 inline */
+.cart-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
   margin-top: 12px;
 }
-.cart-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+
+/* 統一按鈕大小 */
+.action-btn, .num-btn {
+  flex-shrink: 0;
+  width: 80px;      /* 依手機螢幕寬度微調 */
+  height: 40px;
+  font-size: 16px;
 }
-.cart-item input[type="checkbox"] {
-  width: 24px;
-  height: 24px;
-}
+
