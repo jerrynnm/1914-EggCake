@@ -47,7 +47,6 @@ export default function OrderPage() {
     if (itemType === "原味") item.count = plainCount;
     if (itemType === "特價綜合") item.flavors = { ...comboCounts };
     if (itemType === "內餡") item.flavors = { ...fillingCounts };
-    console.log("直接送出：", item);
     alert("已直接送出");
     resetCounts();
   };
@@ -56,18 +55,13 @@ export default function OrderPage() {
 
   const handleSendCart = () => {
     if (!cart.length) return alert("購物車為空");
-    console.log("送出購物車：", cart);
     alert("購物車訂單已送出");
-    setCart([]);
-    setSelected([]);
+    setCart([]); setSelected([]);
   };
 
   const handleDelete = () => {
-    if (selected.length) {
-      setCart(c => c.filter((_, idx) => !selected.includes(idx)));
-    } else {
-      setCart([]);
-    }
+    if (selected.length) setCart(c => c.filter((_, idx) => !selected.includes(idx)));
+    else setCart([]);
     setSelected([]);
   };
 
@@ -82,7 +76,7 @@ export default function OrderPage() {
             onClick={() => setItemType(type)}
           >
             {type}
-            {type !== '原味' && `（共${type === '特價綜合' ? comboTotal : fillingTotal}/3）`}
+            {type !== '原味' && `（共${type==='特價綜合'?comboTotal:fillingTotal}/3）`}
           </button>
         ))}
       </div>
@@ -91,6 +85,7 @@ export default function OrderPage() {
       <div className="selector">
         {itemType === '原味' ? (
           <div className="number-row">
+            起士
             <button className="num-btn" onClick={() => changePlain(-1)}>-</button>
             <span className="num-display">{plainCount}</span>
             <button className="num-btn" onClick={() => changePlain(1)}>+</button>
@@ -98,43 +93,24 @@ export default function OrderPage() {
         ) : (
           FLAVORS.map(flavor => (
             <div key={flavor} className="number-row">
+              {flavor}
               <button
                 className="num-btn"
-                onClick={() =>
-                  itemType === '特價綜合'
-                    ? changeCombo(flavor, -1)
-                    : changeFilling(flavor, -1)
-                }
-                disabled={
-                  (itemType === '特價綜合' && comboCounts[flavor] === 0) ||
-                  (itemType === '內餡' && fillingCounts[flavor] === 0)
-                }
-              >
-                -
-              </button>
-              <span className="num-display">
-                {itemType === '特價綜合' ? comboCounts[flavor] : fillingCounts[flavor]}
-              </span>
+                onClick={() => (itemType==='特價綜合'?changeCombo(flavor,-1):changeFilling(flavor,-1))}
+                disabled={(itemType==='特價綜合'&&comboCounts[flavor]===0)||(itemType==='內餡'&&fillingCounts[flavor]===0)}
+              >-</button>
+              <span className="num-display">{itemType==='特價綜合'?comboCounts[flavor]:fillingCounts[flavor]}</span>
               <button
                 className="num-btn"
-                onClick={() =>
-                  itemType === '特價綜合'
-                    ? changeCombo(flavor, 1)
-                    : changeFilling(flavor, 1)
-                }
-                disabled={
-                  (itemType === '特價綜合' && comboTotal >= 3) ||
-                  (itemType === '內餡' && fillingTotal >= 3)
-                }
-              >
-                +
-              </button>
+                onClick={() => (itemType==='特價綜合'?changeCombo(flavor,1):changeFilling(flavor,1))}
+                disabled={(itemType==='特價綜合'&&comboTotal>=3)||(itemType==='內餡'&&fillingTotal>=3)}
+              >+</button>
             </div>
           ))
         )}
       </div>
 
-      {/* Note Input */}
+      {/* Note */}
       <input
         type="text"
         className="note-input"
@@ -143,42 +119,35 @@ export default function OrderPage() {
         onChange={e => setNote(e.target.value)}
       />
 
-      {/* Main Buttons */}
+      {/* Main Actions: Join Cart between Direct and CartSubmit */}
       <div className="actions-row">
-        <button className="action-btn cart" onClick={handleAddToCart}>🛒 加入購物車</button>
         <button className="action-btn direct" onClick={handleDirectSend}>🚀 直接送出</button>
+        <button className="action-btn cart" onClick={handleAddToCart}>🛒 加入購物車</button>
+        {cart.length>0 && (
+          <>
+            <button className="action-btn send" onClick={handleSendCart}>🚀 送出購物車訂單</button>
+            <button className="action-btn clear" onClick={handleDelete}>🗑️ {selected.length?'刪除選取':'清空購物車'}</button>
+          </>
+        )}
       </div>
 
-      {/* Cart Actions & List */}
-      {cart.length > 0 && (
-        <>
-          <div className="actions-row">
-            <button className="action-btn send" onClick={handleSendCart}>🚀 送出購物車訂單</button>
-            <button className="action-btn clear" onClick={handleDelete}>🗑️ {selected.length ? '刪除選取' : '清空購物車'}</button>
-          </div>
-          <div className="cart-list">
-            {cart.map((it, idx) => (
-              <label key={idx} className="cart-item">
-                <input
-                  type="checkbox"
-                  checked={selected.includes(idx)}
-                  onChange={() => toggleSelect(idx)}
-                />
-                <span>
-                  {it.type === '原味'
-                    ? `原味：${it.count}份`
-                    : Object.entries(it.flavors)
-                        .filter(([, v]) => v > 0)
-                        .map(([k, v]) => `${k}×${v}`)
-                        .join('、')}
-                  {it.note ? `（${it.note}）` : ''}
-                </span>
-              </label>
-            ))}
-          </div>
-        </>
-      )}
+      {/* Cart List */}
+      <div className="cart-list">
+        {cart.map((it, idx) => (
+          <label key={idx} className="cart-item">
+            <input
+              type="checkbox"
+              checked={selected.includes(idx)}
+              onChange={() => toggleSelect(idx)}
+            />
+            <span>
+              {it.type==='原味'?`原味：${it.count}份`:
+               Object.entries(it.flavors).filter(([,v])=>v>0).map(([k,v])=>`${k}×${v}`).join('、')}
+              {it.note?`（${it.note}）`:''}
+            </span>
+          </label>
+        ))}
+      </div>
     </div>
   );
 }
-
