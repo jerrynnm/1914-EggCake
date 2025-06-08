@@ -1,14 +1,107 @@
-.order-container { padding: 12px; }
-.tabs { display: flex; gap: 8px; margin-bottom: 12px; }
-.tab-btn { flex:1; padding:10px; font-size:16px; border-radius:20px; }
-.tab-btn.active { background:#007bff; color:#fff; }
-.selector { display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
-.number-row { display:flex; align-items:center; gap:8px; }
-.num-btn { width:36px; height:36px; border-radius:18px; font-size:18px; }
-.num-display { font-size:18px; width:24px; text-align:center; }
-.note-input { width:100%; padding:10px; margin-bottom:12px; border-radius:8px; }
-.actions-row { display:flex; gap:8px; margin-bottom:12px; }
-.action-btn { flex:1; padding:14px 0; font-size:16px; border-radius:8px; }
-.cart-list { margin-top:12px; }
-.cart-item { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-.cart-item input { width:24px; height:24px; }
+/* 最外層容器 */
+.order-container {
+  padding: 12px;
+}
+
+/* 上方切換標籤 */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 20px;
+  background: #f0f0f0;
+  color: #333;
+  border: none;
+}
+.tab-btn.active {
+  background: #007bff;
+  color: #fff;
+}
+
+/* 數量選擇區 */
+.selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.number-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.num-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  font-size: 18px;
+  background: #f0f0f0;
+  border: none;
+}
+.num-display {
+  width: 24px;
+  text-align: center;
+  font-size: 18px;
+}
+
+/* 備註輸入框 */
+.note-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+/* 動作按鈕排版 */
+.actions-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.action-btn {
+  flex: 1;
+  padding: 14px 0;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  background: #e0e0e0;
+  color: #333;
+}
+.action-btn.direct {
+  background: #007bff;
+  color: #fff;
+}
+.action-btn.cart {
+  background: #ffc107;
+  color: #333;
+}
+.action-btn.send {
+  background: #28a745;
+  color: #fff;
+}
+.action-btn.clear {
+  background: #dc3545;
+  color: #fff;
+}
+
+/* 購物車清單 */
+.cart-list {
+  margin-top: 12px;
+}
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.cart-item input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+}
