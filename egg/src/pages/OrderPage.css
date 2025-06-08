@@ -1,228 +1,151 @@
-/* OrderPage.css */
-
+/* Container & Title */
 .order-page-container {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 12px;
-  font-family: "Noto Sans TC", sans-serif;
+  padding: 16px;
 }
-
-/* 大標題 */
 .page-title {
   font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  font-weight: bold;
 }
 
-/* （1）餐點種類按鈕 */
-.item-type-buttons {
+/* 品項切換 (Item Selector) */
+.item-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.selector-btn {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 24px;
+  background: #f5f5f5;
+  text-align: center;
+  font-size: 16px;
+  color: #007bff;
+}
+.selector-btn.active {
+  background: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}
+
+/* 表單群組 (Form Group) */
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.form-group p {
+  margin: 0;
+  font-size: 18px;
+}
+.form-group label {
+  flex: 1;
+  font-size: 16px;
+}
+.form-group input[type="text"] {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+/* 數量按鈕 (Number Controls) */
+.btn-number.large {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  background: #f5f5f5;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.count-display.large {
+  min-width: 24px;
+  text-align: center;
+  font-size: 18px;
+}
+
+/* 動作按鈕群 (Action Buttons) */
+.action-buttons {
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
 }
-.item-type-btn {
+.full-width-large {
   flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background-color: #fff;
-  font-size: 14px;
-  cursor: pointer;
-}
-.item-type-btn.active {
-  border-color: #e53935;
-  background-color: #ffebee;
-  color: #e53935;
-}
-
-/* （2）新增項目區 */
-.new-item-section {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 24px;
-}
-.new-item-section h2 {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-/* 每個小區塊 */
-.form-group {
-  margin-bottom: 12px;
-}
-
-/* inline label */
-.label-inline {
-  display: inline-flex;
-  align-items: center;
-  font-size: 14px;
-  font-weight: 500;
-}
-.input-number {
-  margin-left: 8px;
-  width: 60px;
-  font-size: 14px;
-  padding: 4px 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-/* textarea 備註 */
-.label-block {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-}
-.input-textarea {
-  width: 100%;
-  min-height: 60px;
-  margin-top: 4px;
-  padding: 6px 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
-  resize: vertical;
-}
-
-/* 口味按鈕區 */
-.flavor-buttons-container {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 4px;
-}
-.flavor-btn {
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  padding: 6px 12px;
-  font-size: 14px;
-  position: relative;
-  cursor: pointer;
-}
-.flavor-selected {
-  background-color: #ffe0b2;
-  border-color: #ffb300;
-}
-.flavor-count {
-  font-size: 12px;
-  font-weight: 600;
-  color: #333;
-  margin-left: 4px;
-}
-.small-text {
-  font-size: 12px;
-  color: #555;
-  margin-top: 4px;
-}
-
-/* 「直接送出」「確認新增」按鈕 */
-.action-buttons {
-  display: flex;
-  gap: 12px;
-  margin-top: 12px;
-  flex-wrap: wrap;
-}
-.btn-direct-send,
-.btn-confirm-add {
-  flex: 1;
-  max-width: 140px;
-  font-size: 14px;
-  padding: 10px 0;
+  padding: 16px 0;
+  font-size: 18px;
   border: none;
-  border-radius: 20px;
-  cursor: pointer;
+  border-radius: 8px;
+}
+.btn-confirm-add.full-width-large {
+  background: #FFA500;
   color: #fff;
 }
-.btn-direct-send {
-  background-color: #039be5;
-}
-.btn-confirm-add {
-  background-color: #ffa726;
+.btn-direct-send.full-width-large {
+  background: #007BFF;
+  color: #fff;
 }
 
-/* （5）暫存訂單顯示區 */
-.temp-orders-section {
+/* 購物車區塊 (Cart Section) */
+.cart-section {
   margin-top: 24px;
 }
-.temp-orders-section h2 {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 8px;
+.cart-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
 }
-.empty-note {
-  background-color: #e3f2fd;
-  color: #555;
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 14px;
+.cart-item-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-.temp-orders-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.temp-order-card {
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 8px 12px;
-  margin-bottom: 8px;
-  position: relative;
-  background-color: #fafafa;
-  font-size: 14px;
-}
-.sub-list {
-  margin: 4px 0 0 16px;
-  padding: 0;
-  font-size: 13px;
-  list-style: disc;
-  color: #333;
-}
-.btn-remove-temp {
-  position: absolute;
-  right: 8px;
-  top: 8px;
-  background: #e53935;
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 4px 8px;
-  font-size: 12px;
-  cursor: pointer;
+.cart-checkbox {
+  width: 24px;
+  height: 24px;
 }
 
-/* 送出所有暫存 */
-.btn-submit-temp-all {
-  margin-top: 8px;
-  background-color: #43a047;
+/* 購物車動作 (Cart Actions) */
+.cart-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn-submit-cart.full-width-large {
+  background: #28a745;
   color: #fff;
-  border: none;
-  border-radius: 20px;
-  padding: 10px 16px;
-  font-size: 14px;
-  cursor: pointer;
+}
+.btn-clear-cart.full-width-large {
+  background: #dc3545;
+  color: #fff;
 }
 
-/* 行動裝置微調 */
-@media screen and (max-width: 480px) {
-  .item-type-btn,
-  .btn-direct-send,
-  .btn-confirm-add,
-  .btn-submit-temp-all {
-    font-size: 12px;
-    padding: 8px 0;
+/* 共用按鈕樣式 */
+button {
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 響應式 (Mobile First) */
+@media (max-width: 600px) {
+  .action-buttons,
+  .cart-actions {
+    flex-direction: column;
   }
-  .flavor-btn {
-    font-size: 12px;
-    padding: 4px 10px;
-  }
-  .input-number {
-    width: 50px;
-    font-size: 12px;
-  }
-  .input-textarea {
-    font-size: 12px;
+  .selector-btn {
+    font-size: 18px;
+    padding: 14px;
   }
 }
