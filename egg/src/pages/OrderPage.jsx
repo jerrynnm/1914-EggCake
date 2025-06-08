@@ -133,26 +133,32 @@ export default function OrderPage() {
         </label>
       </div>
 
+      {/* 加入購物車、直接送出按鈕 */}
       <div className="action-buttons">
         <button onClick={handleAddToCart} className="btn-confirm-add">🛒 加入購物車</button>
         <button onClick={handleDirectSend} className="btn-direct-send">🚀 直接送出</button>
-        <button onClick={handleClearCart} className="btn-clear-cart">🗑️ 清空購物車</button>
       </div>
 
+      {/* 購物車內容及送出/清空按鈕 */}
       {cart.length > 0 && (
-        <div className="temp-orders-section">
+        <div className="cart-section">
           <h2>購物車：</h2>
-          {cart.map((item, idx) => (
-            <div key={idx} className="temp-order-card">
-              <p>{item.type}：
-                {item.type === "原味" ? `${item.plainCount}份` :
-                 item.type === "特價綜合" ? FLAVORS.map(fl=> item.comboCounts[fl]>0? `${fl}×${item.comboCounts[fl]}`:null).filter(Boolean).join('、') :
-                 FLAVORS.map(fl=> item.fillingCounts[fl]>0? `${fl}×${item.fillingCounts[fl]}`:null).filter(Boolean).join('、')}
-              </p>
-              {item.note && <p>備註：{item.note}</p>}
-            </div>
-          ))}
-          <button onClick={handleSubmitCart} className="btn-submit-temp-all">🚀 送出購物車訂單</button>
+          <div className="cart-items">
+            {cart.map((item, idx) => (
+              <div key={idx} className="cart-item-card">
+                <p>{item.type}：
+                  {item.type === "原味" ? `${item.plainCount}份` :
+                   item.type === "特價綜合" ? FLAVORS.map(fl=> item.comboCounts[fl]>0? `${fl}×${item.comboCounts[fl]}`:null).filter(Boolean).join('、') :
+                   FLAVORS.map(fl=> item.fillingCounts[fl]>0? `${fl}×${item.fillingCounts[fl]}`:null).filter(Boolean).join('、')}
+                </p>
+                {item.note && <p>備註：{item.note}</p>}
+              </div>
+            ))}
+          </div>
+          <div className="cart-actions">
+            <button onClick={handleSubmitCart} className="btn-submit-cart">🚀 送出購物車訂單</button>
+            <button onClick={handleClearCart} className="btn-clear-cart">🗑️ 清空購物車</button>
+          </div>
         </div>
       )}
     </div>
