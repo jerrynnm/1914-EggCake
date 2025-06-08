@@ -2,11 +2,7 @@ import React, { useState } from "react";
 import "./OrderPage.css";
 
 const FLAVORS = ["起士", "奧利奧", "黑糖"];
-const ITEM_TYPES = [
-  { key: "原味", label: "原味雞蛋糕" },
-  { key: "特價綜合", label: "特價綜合雞蛋糕" },
-  { key: "內餡", label: "內餡雞蛋糕" }
-];
+const TYPE_KEYS = ["原味", "特價綜合", "內餡"];
 
 export default function OrderPage() {
   const [itemType, setItemType] = useState("原味");
@@ -15,265 +11,135 @@ export default function OrderPage() {
   const [fillingCounts, setFillingCounts] = useState({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
   const [note, setNote] = useState("");
   const [cart, setCart] = useState([]);
-  const [selectedIndices, setSelectedIndices] = useState([]);
+  const [selected, setSelected] = useState([]);
 
   const comboTotal = Object.values(comboCounts).reduce((a, b) => a + b, 0);
   const fillingTotal = Object.values(fillingCounts).reduce((a, b) => a + b, 0);
 
-  const changePlain = (delta) =>
-    setPlainCount((prev) => Math.max(1, prev + delta));
-  const changeCombo = (flavor, delta) =>
-    setComboCounts((prev) => {
-      const total = comboTotal + delta;
-      if (total < 0 || total > 3) return prev;
-      const cnt = prev[flavor] + delta;
-      if (cnt < 0) return prev;
-      return { ...prev, [flavor]: cnt };
-    });
-  const changeFilling = (flavor, delta) =>
-    setFillingCounts((prev) => {
-      const total = fillingTotal + delta;
-      if (total < 0 || total > 3) return prev;
-      const cnt = prev[flavor] + delta;
-      if (cnt < 0) return prev;
-      return { ...prev, [flavor]: cnt };
-    });
+  const changePlain = delta => setPlainCount(p => Math.max(1, p + delta));
+  const changeCombo = (fl, d) => setComboCounts(prev => {
+    const tot = comboTotal + d;
+    if (tot < 0 || tot > 3) return prev;
+    const cnt = prev[fl] + d;
+    if (cnt < 0) return prev;
+    return { ...prev, [fl]: cnt };
+  });
+  const changeFilling = (fl, d) => setFillingCounts(prev => {
+    const tot = fillingTotal + d;
+    if (tot < 0 || tot > 3) return prev;
+    const cnt = prev[fl] + d;
+    if (cnt < 0) return prev;
+    return { ...prev, [fl]: cnt };
+  });
 
-  // 只重置當前品項的數量與備註，保留 itemType
-  const resetForm = () => {
+  const resetCounts = () => {
     if (itemType === "原味") setPlainCount(1);
-    else if (itemType === "特價綜合")
-      setComboCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
-    else setFillingCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
+    if (itemType === "特價綜合") setComboCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
+    if (itemType === "內餡") setFillingCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
     setNote("");
   };
 
-  const handleAddToCart = () => {
-    let newItem;
-    if (itemType === "原味") newItem = { type: itemType, plainCount, note };
-    else if (itemType === "特價綜合" && comboTotal === 3)
-      newItem = { type: itemType, comboCounts: { ...comboCounts }, note };
-    else if (itemType === "內餡" && fillingTotal === 3)
-      newItem = { type: itemType, fillingCounts: { ...fillingCounts }, note };
-    else {
-      alert("請完成選擇後再加入");
-      return;
+  const addToCart = () => {
+    let item = { type: itemType, note };
+    if (itemType === "原味") item.count = plainCount;
+    if (itemType === "特價綜合") {
+      if (comboTotal !== 3) return alert('請選滿3顆');
+      item.flavors = { ...comboCounts };
     }
-    setCart((prev) => [...prev, newItem]);
-    resetForm();
+    if (itemType === "內餡") {
+      if (fillingTotal !== 3) return alert('請選滿3顆');
+      item.flavors = { ...fillingCounts };
+    }
+    setCart(c => [...c, item]);
+    resetCounts();
   };
 
-  const handleDirectSend = () => {
-    // 建立即下單並清空表單
-    let order;
-    if (itemType === "原味") order = { type: itemType, plainCount, note };
-    else if (itemType === "特價綜合" && comboTotal === 3)
-      order = { type: itemType, comboCounts: { ...comboCounts }, note };
-    else if (itemType === "內餡" && fillingTotal === 3)
-      order = { type: itemType, fillingCounts: { ...fillingCounts }, note };
-    else {
-      alert("請完成選擇後再送出");
-      return;
-    }
-    console.log("直接送出：", order);
-    alert("訂單已直接送出！");
-    resetForm();
+  const toggleSelect = i => setSelected(s =>
+    s.includes(i) ? s.filter(x => x !== i) : [...s, i]
+  );
+
+  const submitCart = () => {
+    if (!cart.length) return alert('購物車空');
+    console.log('送出', cart);
+    alert('訂單送出');
+    setCart([]); setSelected([]);
   };
 
-  const toggleSelect = (idx) =>
-    setSelectedIndices((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
-    );
-
-  const handleSubmitCart = () => {
-    if (!cart.length) {
-      alert("購物車為空");
-      return;
-    }
-    console.log("送出購物車：", cart);
-    alert("購物車訂單已送出！");
-    setCart([]);
-    setSelectedIndices([]);
-  };
-
-  const handleClearOrDelete = () => {
-    if (selectedIndices.length) {
-      // 刪除勾選
-      setCart((prev) =>
-        prev.filter((_, i) => !selectedIndices.includes(i))
-      );
+  const clearOrDelete = () => {
+    if (selected.length) {
+      setCart(c => c.filter((_, i) => !selected.includes(i)));
     } else {
-      // 清空全部
       setCart([]);
     }
-    setSelectedIndices([]);
+    setSelected([]);
   };
 
   return (
-    <div className="order-page-container">
-      {/* 品項切換 */}
-      <div className="item-selector">
-        {ITEM_TYPES.map((item) => (
+    <div className="order-container">
+      <div className="tabs">
+        {TYPE_KEYS.map((key, idx) => (
           <button
-            key={item.key}
-            className={`selector-btn full-width-large ${
-              itemType === item.key ? "active" : ""
-            }`}
-            onClick={() => setItemType(item.key)}
+            key={key}
+            className={`tab ${itemType===key? 'active':''}`}
+            onClick={()=>setItemType(key)}
           >
-            {item.label}
+            {key}{key!=='原味' && `（共${key==='特價綜合'?comboTotal:fillingTotal}/3）`}
           </button>
         ))}
       </div>
 
-      {/* 數量控制與備註 */}
-      <div className="form-group">
-        {itemType === "原味" && (
-          <>
-            <p>原味份數：</p>
-            <button
-              className="btn-number large"
-              onClick={() => changePlain(-1)}
-            >
-              −
-            </button>
-            <span className="count-display large">{plainCount}</span>
-            <button
-              className="btn-number large"
-              onClick={() => changePlain(1)}
-            >
-              ＋
-            </button>
-          </>
-        )}
-        {itemType === "特價綜合" && (
-          <>
-            <p>特價綜合 ({comboTotal}/3)：</p>
-            {FLAVORS.map((fl) => (
-              <React.Fragment key={fl}>
-                <span>{fl}</span>
-                <button
-                  className="btn-number large"
-                  disabled={comboCounts[fl] === 0}
-                  onClick={() => changeCombo(fl, -1)}
-                >
-                  −
-                </button>
-                <span className="count-display large">
-                  {comboCounts[fl]}
-                </span>
-                <button
-                  className="btn-number large"
-                  disabled={comboTotal >= 3}
-                  onClick={() => changeCombo(fl, 1)}
-                >
-                  ＋
-                </button>
-              </React.Fragment>
-            ))}
-          </>
-        )}
-        {itemType === "內餡" && (
-          <>
-            <p>內餡 ({fillingTotal}/3)：</p>
-            {FLAVORS.map((fl) => (
-              <React.Fragment key={fl}>
-                <span>{fl}</span>
-                <button
-                  className="btn-number large"
-                  disabled={fillingCounts[fl] === 0}
-                  onClick={() => changeFilling(fl, -1)}
-                >
-                  −
-                </button>
-                <span className="count-display large">
-                  {fillingCounts[fl]}
-                </span>
-                <button
-                  className="btn-number large"
-                  disabled={fillingTotal >= 3}
-                  onClick={() => changeFilling(fl, 1)}
-                >
-                  ＋
-                </button>
-              </React.Fragment>
-            ))}
-          </>
-        )}
-      </div>
-
-      <div className="form-group">
-        <input
-          type="text"
-          placeholder="備註（例如：不要加蔥...）"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          className="note-input"
-        />
-      </div>
-
-      {/* 動作按鈕 */}
-      <div className="action-buttons">
-        <button
-          onClick={handleAddToCart}
-          className="btn-confirm-add full-width-large"
-        >
-          🛒 加入購物車
-        </button>
-        <button
-          onClick={handleDirectSend}
-          className="btn-direct-send full-width-large"
-        >
-          🚀 直接送出
-        </button>
-      </div>
-
-      {/* 購物車列表 */}
-      {cart.length > 0 && (
-        <div className="cart-section">
-          <h2>購物車：</h2>
-          <div className="cart-items">
-            {cart.map((item, idx) => {
-              let desc;
-              if (item.type === "原味") desc = `原味：${item.plainCount}份`;
-              else if (item.type === "特價綜合")
-                desc = FLAVORS.filter((f) => item.comboCounts[f] > 0)
-                  .map((f) => `${f}×${item.comboCounts[f]}`)
-                  .join("、");
-              else
-                desc = FLAVORS.filter((f) => item.fillingCounts[f] > 0)
-                  .map((f) => `${f}×${item.fillingCounts[f]}`)
-                  .join("、");
-
-              return (
-                <label key={idx} className="cart-item-card">
-                  <input
-                    type="checkbox"
-                    checked={selectedIndices.includes(idx)}
-                    onChange={() => toggleSelect(idx)}
-                    className="cart-checkbox"
-                  />
-                  <span>{`${item.type}：${desc}`}</span>
-                </label>
-              );
-            })}
+      <div className="selector">
+        {itemType==='原味' && (
+          <div className="row">
+            <button onClick={()=>changePlain(-1)}>-</button>
+            <span>{plainCount}</span>
+            <button onClick={()=>changePlain(1)}>+</button>
           </div>
-          <div className="cart-actions">
-            <button
-              onClick={handleClearOrDelete}
-              className="btn-clear-cart full-width-large"
-            >
-              🗑️ {selectedIndices.length ? "刪除選取" : "清空購物車"}
-            </button>
-            <button
-              onClick={handleSubmitCart}
-              className="btn-submit-cart full-width-large"
-            >
-              🚀 送出購物車訂單
-            </button>
+        )}
+        {(itemType==='特價綜合' || itemType==='內餡') && FLAVORS.map(fl=> (
+          <div key={fl} className="row">
+            <span>{fl}</span>
+            <button onClick={()=> itemType==='特價綜合'? changeCombo(fl,-1): changeFilling(fl,-1)}>-</button>
+            <span>{ itemType==='特價綜合'? comboCounts[fl]: fillingCounts[fl] }</span>
+            <button onClick={()=> itemType==='特價綜合'? changeCombo(fl,1): changeFilling(fl,1)}>+</button>
           </div>
+        ))}
+      </div>
+
+      <input
+        type="text"
+        className="note"
+        value={note}
+        onChange={e=>setNote(e.target.value)}
+        placeholder="備註..."
+      />
+
+      <div className="actions">
+        <button onClick={addToCart}>🛒 加入</button>
+        <button onClick={submitCart}>🚀 送出</button>
+        <button onClick={clearOrDelete}>🗑️ {selected.length?'刪除':'清空'}</button>
+      </div>
+
+      {cart.length>0 && (
+        <div className="cart">
+          {cart.map((it,i)=>(
+            <label key={i} className="item">
+              <input
+                type="checkbox"
+                checked={selected.includes(i)}
+                onChange={()=>toggleSelect(i)}
+              />
+              <span>
+                {it.type}：{it.type==='原味'?it.count+'份':
+                  Object.entries(it.flavors).filter(([,v])=>v>0).map(([k,v])=>`${k}×${v}`).join('、')
+                }
+                {it.note && `（${it.note}）`}
+              </span>
+            </label>
+          ))}
         </div>
       )}
     </div>
   );
 }
+
