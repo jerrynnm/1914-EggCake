@@ -15,6 +15,7 @@ export default function OrderPage() {
   const [fillingCounts, setFillingCounts] = useState({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
   const [note, setNote] = useState("");
   const [cart, setCart] = useState([]);
+  const [selectedIndices, setSelectedIndices] = useState([]);
 
   const comboTotal = Object.values(comboCounts).reduce((a, b) => a + b, 0);
   const fillingTotal = Object.values(fillingCounts).reduce((a, b) => a + b, 0);
@@ -35,11 +36,15 @@ export default function OrderPage() {
     return { ...prev, [flavor]: count };
   });
 
+  // Reset only counts and note, keep current itemType
   const resetForm = () => {
-    setItemType("原味");
-    setPlainCount(1);
-    setComboCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
-    setFillingCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
+    if (itemType === "原味") {
+      setPlainCount(1);
+    } else if (itemType === "特價綜合") {
+      setComboCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
+    } else {
+      setFillingCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
+    }
     setNote("");
   };
 
@@ -68,12 +73,29 @@ export default function OrderPage() {
     resetForm();
   };
 
-  const handleClearCart = () => setCart([]);
+  const handleClearCart = () => {
+    setCart([]);
+    setSelectedIndices([]);
+  };
+
   const handleSubmitCart = () => {
     if (cart.length === 0) { alert("購物車為空"); return; }
     console.log("送出購物車：", cart);
     alert("購物車訂單已送出！");
     setCart([]);
+    setSelectedIndices([]);
+  };
+
+  const toggleSelect = (idx) => {
+    setSelectedIndices(prev =>
+      prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
+    );
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedIndices.length === 0) { alert("請先勾選要刪除的項目"); return; }
+    setCart(prev => prev.filter((_, idx) => !selectedIndices.includes(idx)));
+    setSelectedIndices([]);
   };
 
   return (
@@ -133,34 +155,46 @@ export default function OrderPage() {
         </label>
       </div>
 
-      {/* 加入購物車、直接送出按鈕 */}
       <div className="action-buttons">
-        <button onClick={handleAddToCart} className="btn-confirm-add">🛒 加入購物車</button>
-        <button onClick={handleDirectSend} className="btn-direct-send">🚀 直接送出</button>
+        <button onClick={handleAddToCart} className="btn-confirm-add full-width">🛒 加入購物車</button>
+        <button onClick={handleDirectSend} className="btn-direct-send full-width">🚀 直接送出</button>
       </div>
 
-      {/* 購物車內容及送出/清空按鈕 */}
       {cart.length > 0 && (
         <div className="cart-section">
           <h2>購物車：</h2>
           <div className="cart-items">
             {cart.map((item, idx) => (
               <div key={idx} className="cart-item-card">
-                <p>{item.type}：
-                  {item.type === "原味" ? `${item.plainCount}份` :
-                   item.type === "特價綜合" ? FLAVORS.map(fl=> item.comboCounts[fl]>0? `${fl}×${item.comboCounts[fl]}`:null).filter(Boolean).join('、') :
-                   FLAVORS.map(fl=> item.fillingCounts[fl]>0? `${fl}×${item.fillingCounts[fl]}`:null).filter(Boolean).join('、')}
-                </p>
-                {item.note && <p>備註：{item.note}</p>}
+                <input
+                  type="checkbox"
+                  checked={selectedIndices.includes(idx)}
+                  onChange={() => toggleSelect(idx)}
+                />
+                <span>
+                  {item.type}：
+                  {item.type === "原味"
+                    ? `${item.plainCount}份`
+                    : item.type === "特價綜合"
+                    ? FLAVORS.filter(fl => item.comboCounts[fl] > 0)
+                        .map(fl => `${fl}×${item.comboCounts[fl]}`)
+                        .join('、')
+                    : FLAVORS.filter(fl => item.fillingCounts[fl] > 0)
+                        .map(fl => `${fl}×${item.fillingCounts[fl]}`)
+                        .join('、')
+                  }
+                </span>
               </div>
             ))}
           </div>
           <div className="cart-actions">
-            <button onClick={handleSubmitCart} className="btn-submit-cart">🚀 送出購物車訂單</button>
-            <button onClick={handleClearCart} className="btn-clear-cart">🗑️ 清空購物車</button>
+            <button onClick={handleSubmitCart} className="btn-submit-cart full-width">🚀 送出購物車訂單</button>
+            <button onClick={handleDeleteSelected} className="btn-delete-selected full-width">❌ 刪除選取</button>
+            <button onClick={handleClearCart} className="btn-clear-cart full-width">🗑️ 清空購物車</button>
           </div>
         </div>
       )}
     </div>
   );
 }
+
