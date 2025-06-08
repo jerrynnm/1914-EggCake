@@ -1,88 +1,98 @@
-/* CookingPage.css */
-
-.cooking-page-container {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 12px;
-  font-family: "Noto Sans TC", sans-serif;
-}
-
-.page-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
-
-.empty-note {
-  background-color: #fce4ec;
-  color: #555;
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.pending-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.pending-card {
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 8px 12px;
-  margin-bottom: 12px;
-  background-color: #fafafa;
-  font-size: 14px;
-}
-
-.pending-header {
+/* 1. 品項選擇按鈕 (selector-btn) */
+.item-selector {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.selector-btn {
+  flex: 1 1 calc(33% - 16px);
+  padding: 12px 0;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  background: #f5f5f5;
+  text-align: center;
+}
+.selector-btn.active {
+  background: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}
+
+/* 2. 所有主要動作按鈕全寬且加大點擊範圍 */
+.full-width {
+  display: block;
+  width: 100%;
+  padding: 14px 0;
+  font-size: 16px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 8px;
+}
+
+/* 加入購物車 */
+.btn-confirm-add {
+  background: #ffa500;
+  color: #fff;
+}
+
+/* 直接送出 */
+.btn-direct-send {
+  background: #0099ff;
+  color: #fff;
+}
+
+/* 送出購物車訂單 */
+.btn-submit-cart {
+  background: #28a745;
+  color: #fff;
+}
+
+/* 刪除選取 */
+.btn-delete-selected {
+  background: #dc3545;
+  color: #fff;
+}
+
+/* 清空購物車 */
+.btn-clear-cart {
+  background: #6c757d;
+  color: #fff;
+}
+
+/* 3. 購物車項目 */
+.cart-item-card {
+  display: flex;
   align-items: center;
-  margin-bottom: 4px;
+  gap: 8px;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
 }
 
-.pending-id {
-  font-size: 12px;
-  color: #333;
+/* 勾選框與文字對齊 */
+.cart-item-card input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
 }
 
-.sub-list {
-  list-style: disc;
-  margin: 4px 0 0 16px;
-  padding: 0;
-  font-size: 13px;
-  color: #333;
+/* 4. 購物車按鈕群 */
+.cart-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
 }
 
-.pending-note {
-  font-size: 13px;
-  color: #555;
-  margin-top: 2px;
-  font-style: italic;
-}
-
-.small-text {
-  font-size: 12px;
-  color: #666;
-  margin-top: 4px;
-}
-
-/* 行動裝置微調 */
-@media screen and (max-width: 480px) {
-  .page-title {
-    font-size: 20px;
+/* 大螢幕（平板／桌面）時並排 */
+@media (min-width: 600px) {
+  .cart-actions {
+    flex-direction: row;
   }
-  .pending-card {
-    font-size: 12px;
-    padding: 6px 10px;
-  }
-  .sub-list {
-    font-size: 12px;
-    margin-left: 14px;
-  }
-  .pending-note {
-    font-size: 12px;
+  .cart-actions .full-width {
+    flex: 1;
+    margin: 0 8px;
   }
 }
+
