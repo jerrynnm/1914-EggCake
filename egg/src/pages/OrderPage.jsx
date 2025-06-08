@@ -2,6 +2,11 @@ import React, { useState } from "react";
 import "./OrderPage.css";
 
 const FLAVORS = ["起士", "奧利奧", "黑糖"];
+const ITEM_TYPES = [
+  { key: "原味", label: "原味雞蛋糕" },
+  { key: "特價綜合", label: "特價綜合雞蛋糕" },
+  { key: "內餡", label: "內餡雞蛋糕" }
+];
 
 export default function OrderPage() {
   const [itemType, setItemType] = useState("原味");
@@ -14,26 +19,21 @@ export default function OrderPage() {
   const comboTotal = Object.values(comboCounts).reduce((a, b) => a + b, 0);
   const fillingTotal = Object.values(fillingCounts).reduce((a, b) => a + b, 0);
 
-  // 增減函式
   const changePlain = (delta) => setPlainCount(prev => Math.max(1, prev + delta));
-  const changeCombo = (flavor, delta) => {
-    setComboCounts(prev => {
-      const newTotal = comboTotal + delta;
-      if (newTotal < 0 || newTotal > 3) return prev;
-      const newCount = prev[flavor] + delta;
-      if (newCount < 0 || newCount > 3) return prev;
-      return { ...prev, [flavor]: newCount };
-    });
-  };
-  const changeFilling = (flavor, delta) => {
-    setFillingCounts(prev => {
-      const newTotal = fillingTotal + delta;
-      if (newTotal < 0 || newTotal > 3) return prev;
-      const newCount = prev[flavor] + delta;
-      if (newCount < 0 || newCount > 3) return prev;
-      return { ...prev, [flavor]: newCount };
-    });
-  };
+  const changeCombo = (flavor, delta) => setComboCounts(prev => {
+    const newTotal = comboTotal + delta;
+    if (newTotal < 0 || newTotal > 3) return prev;
+    const count = prev[flavor] + delta;
+    if (count < 0) return prev;
+    return { ...prev, [flavor]: count };
+  });
+  const changeFilling = (flavor, delta) => setFillingCounts(prev => {
+    const newTotal = fillingTotal + delta;
+    if (newTotal < 0 || newTotal > 3) return prev;
+    const count = prev[flavor] + delta;
+    if (count < 0) return prev;
+    return { ...prev, [flavor]: count };
+  });
 
   const resetForm = () => {
     setItemType("原味");
@@ -45,9 +45,8 @@ export default function OrderPage() {
 
   const handleAddToCart = () => {
     let newItem;
-    if (itemType === "原味") {
-      newItem = { type: itemType, plainCount, note };
-    } else if (itemType === "特價綜合") {
+    if (itemType === "原味") newItem = { type: itemType, plainCount, note };
+    else if (itemType === "特價綜合") {
       if (comboTotal !== 3) { alert("請選擇正好3顆口味"); return; }
       newItem = { type: itemType, comboCounts: { ...comboCounts }, note };
     } else {
@@ -59,23 +58,17 @@ export default function OrderPage() {
   };
 
   const handleDirectSend = () => {
-    let single;
-    if (itemType === "原味") {
-      single = { type: itemType, plainCount, note };
-    } else if (itemType === "特價綜合" && comboTotal === 3) {
-      single = { type: itemType, comboCounts: { ...comboCounts }, note };
-    } else if (itemType === "內餡" && fillingTotal === 3) {
-      single = { type: itemType, fillingCounts: { ...fillingCounts }, note };
-    } else {
-      alert("請完成選擇後再送出"); return;
-    }
-    console.log("直接送出：", single);
+    let order;
+    if (itemType === "原味") order = { type: itemType, plainCount, note };
+    else if (itemType === "特價綜合" && comboTotal === 3) order = { type: itemType, comboCounts: { ...comboCounts }, note };
+    else if (itemType === "內餡" && fillingTotal === 3) order = { type: itemType, fillingCounts: { ...fillingCounts }, note };
+    else { alert("請完成選擇後再送出"); return; }
+    console.log("直接送出：", order);
     alert("訂單已直接送出！");
     resetForm();
   };
 
   const handleClearCart = () => setCart([]);
-
   const handleSubmitCart = () => {
     if (cart.length === 0) { alert("購物車為空"); return; }
     console.log("送出購物車：", cart);
@@ -86,14 +79,15 @@ export default function OrderPage() {
   return (
     <div className="order-page-container">
       <h1 className="page-title">🍳 點餐頁面</h1>
-      <div className="form-group">
-        <label>選擇品項：
-          <select value={itemType} onChange={e => setItemType(e.target.value)}>
-            <option value="原味">原味雞蛋糕</option>
-            <option value="特價綜合">特價綜合雞蛋糕</option>
-            <option value="內餡">內餡雞蛋糕</option>
-          </select>
-        </label>
+
+      <div className="item-selector">
+        {ITEM_TYPES.map(item => (
+          <button
+            key={item.key}
+            className={`selector-btn ${itemType === item.key ? 'active' : ''}`}
+            onClick={() => setItemType(item.key)}
+          >{item.label}</button>
+        ))}
       </div>
 
       {itemType === "原味" && (
@@ -164,4 +158,3 @@ export default function OrderPage() {
     </div>
   );
 }
-
