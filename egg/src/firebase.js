@@ -13,7 +13,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-// ① 先把从 .env 或 Vercel 注入的变量存到一个常量里
+// 1. 把 process.env.REACT_APP_FIREBASE_… 读到的值先存在 firebaseConfig
 const firebaseConfig = {
   apiKey:             process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain:         process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -24,32 +24,30 @@ const firebaseConfig = {
   appId:              process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-// ② 打印一次，确认都不是 undefined
+// 2. 打印一次，确保它们都不是 undefined
 console.log("🔥 Firebase config:", firebaseConfig);
 
-// ③ 再用它去初始化
+// 3. 用它来初始化 SDK
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
-// ④ 拿到 orders collection 引用
+// 4. 拿到 orders collection 的引用
 const ordersCol = collection(db, "orders");
 
-/**
- * 新增一筆訂單到 Firestore
- */
+/** 新增一笔订单 */
 export async function addOrder(orderData) {
   const payload = {
     ...orderData,
     status:    "pending",
     createdAt: serverTimestamp(),
   };
+  console.log("✉️  addOrder payload:", payload);
   const ref = await addDoc(ordersCol, payload);
+  console.log("✔️  addOrder done, id=", ref.id);
   return ref.id;
 }
 
-/**
- * 監聽 status === "pending" 的訂單
- */
+/** 监听所有 pending 的订单 */
 export function listenPendingOrders(callback) {
   const q = query(
     ordersCol,
@@ -58,14 +56,16 @@ export function listenPendingOrders(callback) {
   );
   return onSnapshot(q, snap => {
     const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    console.log("🔔 pending orders:", list);
     callback(list);
+  }, err => {
+    console.error("❌ listenPendingOrders error:", err);
   });
 }
 
-/**
- * 更新訂單的狀態
- */
+/** 更新订单状态 */
 export async function updateOrderStatus(orderId, status) {
   const ref = doc(db, "orders", orderId);
   await updateDoc(ref, { status });
+  console.log(`🔄 Order ${orderId} -> ${status}`);
 }
