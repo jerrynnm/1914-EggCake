@@ -13,7 +13,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-// 讀取環境變數（要確保 .env 或 Vercel 上都有正確設定 REACT_APP_ 前綴的變數）
+// 一定要先把 config 赋给一个常量！
 const firebaseConfig = {
   apiKey:             process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain:         process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -24,69 +24,44 @@ const firebaseConfig = {
   appId:              process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-// 在初始化前打印出來，確認都不是 undefined
+// 打印出来确认都不是 undefined
 console.log("🔥 Firebase config:", firebaseConfig);
 
-// 初始化 Firebase App
+// 初始化 Firebase
 const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
 
-// 初始化 Firestore
-const db = getFirestore(app);
-
-// orders collection 參考
+// Firestore 上的 orders 集合引用
 const ordersCol = collection(db, "orders");
 
-/**
- * 新增一筆訂單到 Firestore
- * @param {object} orderData
- *   {
- *     type: "原味"｜"特價綜合"｜"內餡",
- *     plainCount?,    // 僅當 type==="原味" 有
- *     comboCounts?,   // 僅當 type==="特價綜合" 有
- *     fillingCounts?, // 僅當 type==="內餡" 有
- *     note,           // 備註
- *   }
- * @returns {Promise<string>} 新增文檔的 id
- */
+/** 新增訂單 */
 export async function addOrder(orderData) {
   const payload = {
     ...orderData,
-    status: "pending",            // 一律先標為 pending
-    createdAt: serverTimestamp(), // 自動加上 timestamp
+    status:    "pending",
+    createdAt: serverTimestamp(),
   };
   const docRef = await addDoc(ordersCol, payload);
   return docRef.id;
 }
 
-/**
- * 監聽 status === "pending" 的訂單 (製作中)
- * @param {function(Array<object>)} callback
- *   callback 會收到一個陣列，每項結構為 { id, type, plainCount?, comboCounts?, fillingCounts?, note, status, createdAt }
- * @returns {function()} unsubscribe function
- */
+/** 監聽製作中訂單 */
 export function listenPendingOrders(callback) {
   const q = query(
     ordersCol,
     where("status", "==", "pending"),
     orderBy("createdAt", "asc")
   );
-  return onSnapshot(q, (snapshot) => {
-    const list = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+  return onSnapshot(q, snap => {
+    const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     callback(list);
   });
 }
 
-/**
- * 更新訂單的狀態欄位
- * @param {string} orderId
- * @param {"pending"|"inProgress"|"done"} status
- * @returns {Promise<void>}
- */
+/** 更新訂單狀態 */
 export async function updateOrderStatus(orderId, status) {
   const ref = doc(db, "orders", orderId);
   await updateDoc(ref, { status });
 }
+
 
