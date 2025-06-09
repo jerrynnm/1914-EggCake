@@ -1,19 +1,21 @@
+// OrderPage.jsx
 import React, { useState } from "react";
 import "./OrderPage.css";
 
-const FLAVORS = ["起士", "奧利奧", "黑糖"];
-const TYPES   = ["原味", "特價綜合", "內餡"];
+const MAIN_PAGES = ["點餐", "製作", "完成"];
+const TYPES      = ["原味", "特價綜合", "內餡"];
+const FLAVORS    = ["起士", "奧利奧", "黑糖"];
 
 export default function OrderPage() {
   /* -------------------- state -------------------- */
-  const [page, setPage] = useState("點餐");        // 新增頂端分頁 state
-  const [itemType, setItemType] = useState("原味");
-  const [plainCount, setPlainCount] = useState(1);
-  const [comboCounts, setComboCounts] = useState({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
+  const [page, setPage]           = useState("點餐");
+  const [itemType, setItemType]   = useState("原味");
+  const [plainCount, setPlainCount]       = useState(1);
+  const [comboCounts, setComboCounts]     = useState({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
   const [fillingCounts, setFillingCounts] = useState({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
-  const [note, setNote] = useState("");
-  const [cart, setCart] = useState([]);
-  const [selected, setSelected] = useState([]);
+  const [note, setNote]           = useState("");
+  const [cart, setCart]           = useState([]);
+  const [selected, setSelected]   = useState([]);
 
   const comboTotal   = Object.values(comboCounts).reduce((a, b) => a + b, 0);
   const fillingTotal = Object.values(fillingCounts).reduce((a, b) => a + b, 0);
@@ -24,9 +26,9 @@ export default function OrderPage() {
   const changeFill  = (fl, d) => setFillingCounts(p => ({ ...p, [fl]: Math.max(0, p[fl] + d) }));
 
   const resetCounts = () => {
-    if (itemType === "原味") setPlainCount(1);
-    if (itemType === "特價綜合") setComboCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
-    if (itemType === "內餡")   setFillingCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
+    if (itemType === "原味")       setPlainCount(1);
+    if (itemType === "特價綜合")  setComboCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
+    if (itemType === "內餡")      setFillingCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
     setNote("");
   };
 
@@ -70,15 +72,33 @@ export default function OrderPage() {
     </div>
   );
 
-      {/* 如果未在「點餐」頁，就顯示提示文字或其他內容 */}
+  /* -------------------- render -------------------- */
+  return (
+    <div className="order-container">
+      {/* === 主分頁：點餐 / 製作 / 完成 === */}
+      <div className="tabs">
+        {MAIN_PAGES.map(p => (
+          <button
+            key={p}
+            className={`tab-btn ${page === p ? "active" : ""}`}
+            onClick={() => setPage(p)}
+          >
+            {p === "點餐" && "🛒 "}
+            {p === "製作" && "🔍 "}
+            {p === "完成" && "✅ "}
+            {p}
+          </button>
+        ))}
+      </div>
+
       {page !== "點餐" ? (
-        <div style={{ textAlign: "center", marginTop: "50px", color: "#666" }}>
+        <div className="placeholder">
           {page} 頁面內容尚未實作
         </div>
       ) : (
         <>
-          {/* Tabs */}
-          <div className="tabs">
+          {/* === 子分頁：原味 / 特價綜合 / 內餡 === */}
+          <div className="sub-tabs">
             {TYPES.map(t => (
               <button
                 key={t}
@@ -91,7 +111,7 @@ export default function OrderPage() {
             ))}
           </div>
 
-          {/* Selector */}
+          {/* === 數量選擇 === */}
           <div className="selector">
             {itemType === "原味" && renderNumberRow(
               "份數", plainCount, false, false,
@@ -119,7 +139,7 @@ export default function OrderPage() {
             )}
           </div>
 
-          {/* 備註 */}
+          {/* === 備註 === */}
           <input
             className="note-input"
             value={note}
@@ -127,7 +147,7 @@ export default function OrderPage() {
             onChange={e => setNote(e.target.value)}
           />
 
-          {/* 第一列按鈕 */}
+          {/* === 第一列按鈕 === */}
           <div className="actions-row actions-row--top">
             <button className="action-btn direct" onClick={directSend}>
               🚀 直接送出
@@ -137,7 +157,7 @@ export default function OrderPage() {
             </button>
           </div>
 
-          {/* 購物車清單 */}
+          {/* === 購物車清單 === */}
           {cart.length > 0 && (
             <div className="cart-list">
               {cart.map((it, i) => (
@@ -156,7 +176,7 @@ export default function OrderPage() {
             </div>
           )}
 
-          {/* 第二列按鈕 */}
+          {/* === 第二列按鈕 === */}
           {cart.length > 0 && (
             <div className="actions-row actions-row--bottom">
               <button className="action-btn clear" onClick={deleteOrClear}>
