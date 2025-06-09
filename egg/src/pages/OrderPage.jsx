@@ -101,7 +101,7 @@ export default function OrderPage() {
       {/* 備註 */}
       <input className="note-input" value={note} placeholder="備註…" onChange={e => setNote(e.target.value)} />
 
-      {/* 第一列按鈕 */}
+            {/* 第一列按鈕 */}
       <div className="actions-row">
         <button className="action-btn direct" onClick={directSend}>🚀 直接送出</button>
         <button className="action-btn cart"   onClick={addToCart}>🛒 加入購物車</button>
@@ -125,11 +125,15 @@ export default function OrderPage() {
 
       {/* 第二列按鈕 */}
       {cart.length > 0 && (
-        <div className="cart-actions">
-          <button className="action-btn clear" onClick={deleteOrClear}>🗑️ {selected.length ? "刪除選取" : "清空購物車"}</button>
-          <button className="action-btn send"  onClick={sendCart}>🚀 送出購物車訂單</button>
+-       <div className="cart-actions">
++       <div className="actions-row">
+          <button className="action-btn clear" onClick={deleteOrClear}>
+            🗑️ {selected.length ? "刪除選取" : "清空購物車"}
+          </button>
+          <button className="action-btn send" onClick={sendCart}>
+            🚀 送出購物車訂單
+          </button>
         </div>
       )}
-    </div>
-  );
+
 }
