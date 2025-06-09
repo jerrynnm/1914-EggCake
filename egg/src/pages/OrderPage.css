@@ -152,10 +152,17 @@ body { margin: 0; }
   display: flex;
   gap: 12px;
   justify-content: center;
-  flex-wrap: nowrap;  /* 不換行，左右並排 */
+  flex-wrap: nowrap;  /* 不換行 */
   margin: 16px 0 12px;
 }
-.cart-actions .action-btn { flex:1; }
+
+/* 對 .cart-actions 底下的按鈕強制平均分欄，不再撐滿父容器 */
+.cart-actions .action-btn {
+  flex: 1;           /* 平均分配可用寬度 */
+  max-width: none;   /* 取消任何 width:100% 的限制 */
+  width: auto;       /* 確定不被拉滿 */
+}
+
 
 /* ---------- 小螢幕 <=430px ---------- */
 @media (max-width:430px){
