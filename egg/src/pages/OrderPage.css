@@ -148,20 +148,26 @@ body { margin: 0; }
 }
 
 /* ---------- 第二列操作 ---------- */
-.cart-actions {
+/* 把舊的 cart-actions 換成 actions-row */
+.actions-row {
   display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: nowrap;  /* 不換行 */
-  margin: 16px 0 12px;
+  gap: 12px;               /* 按鈕間距 */
+  justify-content: center; /* 水平置中 */
+  align-items: center;     /* 垂直置中 */
+  margin-top: 16px;        /* 跟上一區塊留點空 */
 }
 
-/* 對 .cart-actions 底下的按鈕強制平均分欄，不再撐滿父容器 */
-.cart-actions .action-btn {
-  flex: 1;           /* 平均分配可用寬度 */
-  max-width: none;   /* 取消任何 width:100% 的限制 */
-  width: auto;       /* 確定不被拉滿 */
+/* 移除寬度 100% 並還原成 auto，若想等寬再打 flex:1 */
+.actions-row .action-btn {
+  flex: none;      /* 預設大小，不撐滿 */
+  width: auto;     /* 讓按鈕隨內容寬度 */
+  padding: 10px 20px;
+  /* 如果要兩顆等寬，可以改成：
+  flex: 1;
+  max-width: none;
+  */
 }
+
 
 
 /* ---------- 小螢幕 <=430px ---------- */
