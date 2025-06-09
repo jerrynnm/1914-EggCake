@@ -65,15 +65,13 @@ export default function OrderPage() {
       <span className="flavor-label">{label}</span>
       <button className="num-btn" onClick={onMinus} disabled={minusD}>-</button>
       <span className="num-display">{val}</span>
-      <button className="num-btn" onClick={onPlus}  disabled={plusD}>+</button>
+      <button className="num-btn" onClick={onPlus} disabled={plusD}>+</button>
     </div>
   );
 
   /* -------------------- render -------------------- */
   return (
     <div className="order-container">
-      {/* 頂端功能鍵可放在 .top-nav 容器，視需求插入 */}
-
       {/* Tabs */}
       <div className="tabs">
         {TYPES.map(t => (
@@ -89,22 +87,48 @@ export default function OrderPage() {
 
       {/* Selector */}
       <div className="selector">
-        {itemType === "原味" && renderNumberRow("份數", plainCount, false, false, () => changePlain(-1), () => changePlain(1))}
+        {itemType === "原味" && renderNumberRow(
+          "份數", plainCount, false, false,
+          () => changePlain(-1), () => changePlain(1)
+        )}
         {itemType === "特價綜合" && FLAVORS.map(fl =>
-          renderNumberRow(fl, comboCounts[fl], comboCounts[fl] === 0, comboTotal >= 3, () => changeCombo(fl, -1), () => changeCombo(fl, 1))
+          renderNumberRow(
+            fl,
+            comboCounts[fl],
+            comboCounts[fl] === 0,
+            comboTotal >= 3,
+            () => changeCombo(fl, -1),
+            () => changeCombo(fl, 1)
+          )
         )}
         {itemType === "內餡" && FLAVORS.map(fl =>
-          renderNumberRow(fl, fillingCounts[fl], fillingCounts[fl] === 0, fillingTotal >= 3, () => changeFill(fl, -1), () => changeFill(fl, 1))
+          renderNumberRow(
+            fl,
+            fillingCounts[fl],
+            fillingCounts[fl] === 0,
+            fillingTotal >= 3,
+            () => changeFill(fl, -1),
+            () => changeFill(fl, 1)
+          )
         )}
       </div>
 
       {/* 備註 */}
-      <input className="note-input" value={note} placeholder="備註…" onChange={e => setNote(e.target.value)} />
+      <input
+        className="note-input"
+        value={note}
+        placeholder="備註…"
+        onChange={e => setNote(e.target.value)}
+      />
 
-            {/* 第一列按鈕 */}
-      <div className="actions-row">
-        <button className="action-btn direct" onClick={directSend}>🚀 直接送出</button>
-        <button className="action-btn cart"   onClick={addToCart}>🛒 加入購物車</button>
+      {/* 第一列按鈕 */}
+      <div className="actions-row actions-row--top">
+        <button className="action-btn direct" onClick={directSend}>
+          🚀 直接送出
+        </button>
+        <button className="action-btn cart" onClick={addToCart}>
+          🛒 加入購物車
+        </button>
       </div>
 
       {/* 購物車清單 */}
@@ -117,7 +141,10 @@ export default function OrderPage() {
                 checked={selected.includes(i)}
                 onChange={() => toggleSelect(i)}
               />
-              <span>{getItemLabel(it)}{it.note ? `（${it.note}）` : ""}</span>
+              <span>
+                {getItemLabel(it)}
+                {it.note ? `（${it.note}）` : ""}
+              </span>
             </label>
           ))}
         </div>
@@ -125,8 +152,7 @@ export default function OrderPage() {
 
       {/* 第二列按鈕 */}
       {cart.length > 0 && (
--       <div className="cart-actions">
-+       <div className="actions-row">
+        <div className="actions-row actions-row--bottom">
           <button className="action-btn clear" onClick={deleteOrClear}>
             🗑️ {selected.length ? "刪除選取" : "清空購物車"}
           </button>
@@ -135,5 +161,6 @@ export default function OrderPage() {
           </button>
         </div>
       )}
-
+    </div>
+  );
 }
