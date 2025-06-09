@@ -19,11 +19,13 @@ body {
   padding: 12px;
 }
 
-/* ---------- 頂端功能鍵 ---------- */
+/* ---------- 頂端功能鍵 (撐滿螢幕寬度) ---------- */
 .top-nav {
   display: flex;
   gap: 8px;
-  margin-bottom: 12px;
+  /* 讓這排突破 .order-container 的左右 padding，貼齊螢幕邊 */
+  margin: 0 -12px 12px;
+  padding: 0 12px;
 }
 .top-nav button {
   flex: 1;
@@ -142,12 +144,12 @@ body {
   flex-wrap: nowrap;
 }
 
-/* 第一排（直接送出＋加入購物車）跟下方內容拉開 */
+/* 第一排（直接送出＋加入購物車）跟下方留 18px 間距 */
 .actions-row--top {
   margin-bottom: 18px;
 }
 
-/* 第二排（清空購物車＋送出購物車訂單）跟上方內容拉開 */
+/* 第二排（清空購物車＋送出購物車訂單）跟上方留 16px 間距 */
 .actions-row--bottom {
   margin-top: 16px;
 }
