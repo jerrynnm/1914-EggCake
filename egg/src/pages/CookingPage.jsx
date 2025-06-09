@@ -6,7 +6,7 @@ import {
   doc, updateDoc, deleteDoc, serverTimestamp
 } from "firebase/firestore";
 
-// 將任何格式文件轉成 [{ name, qty }]
+/* 把任何格式文件 ➜ [{name,qty}] */
 const toList = (d) => {
   if (Array.isArray(d.items) && d.items.length) return d.items;
   if (d.plainCount) return [{ name: "原味雞蛋糕", qty: d.plainCount }];
@@ -23,13 +23,13 @@ export default function CookingPage() {
   const [orders, setOrders] = useState([]);
   const [selected, setSel]  = useState({});
 
-  /* 📡 監聽待製作（需複合索引：status asc, createdAt asc）*/
+  /* 監聽待製作 */
   useEffect(() => {
-    console.log("🍳 New CookingPage loaded");       // ← 用這行來驗證新版
+    console.log("🍳 New CookingPage loaded");   // 看得到這行就表示跑到新版
     const q = query(
       collection(db, "orders"),
       where("status", "==", "pending"),
-      orderBy("createdAt", "asc")
+      orderBy("createdAt", "asc")              // 需複合索引
     );
     const unsub = onSnapshot(q, snap => {
       setOrders(
@@ -81,7 +81,7 @@ export default function CookingPage() {
     setSel(p => ({ ...p, [o.id]: new Set() }));
   };
 
-  /* -------- UI -------- */
+  /* ---------- UI ---------- */
   return (
     <div className="cook-wrap">
       {orders.map(o => (
