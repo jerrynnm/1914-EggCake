@@ -44,7 +44,7 @@ export default function OrderPage() {
 
     if (itemType === "原味") {
       if (plainCount <= 0) return alert("份數必須 ≥1");
-      items.push({ name: "", qty: plainCount });
+      items.push({ name: "原味", qty: plainCount });
     }
 
     if (itemType === "特價綜合") {
