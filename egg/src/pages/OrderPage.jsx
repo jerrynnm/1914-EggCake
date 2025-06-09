@@ -1,7 +1,7 @@
 // src/pages/OrderPage.jsx
 import React, { useState } from "react";
 import "./OrderPage.css";
-import { addOrder } from "../firebase";  // ← 新增引入
+import { addOrder } from "../firebase";
 
 const TYPES   = ["原味", "特價綜合", "內餡"];
 const FLAVORS = ["起士", "奧利奧", "黑糖"];
@@ -31,51 +31,61 @@ export default function OrderPage() {
     setNote("");
   };
 
-  // 將單筆訂單推到 Firestore
-  const pushOrder = async (itm) => {
+  /** Push a single order object to Firestore */
+  const pushOrder = async itm => {
+    console.log("Sending to Firebase:", itm);
     try {
-      await addOrder(itm);
+      const id = await addOrder(itm);
+      console.log("Order written with ID:", id);
     } catch (err) {
-      console.error("Add order failed:", err);
-      alert("送出訂單失敗");
+      console.error("Failed to send order:", err);
+      alert("傳送訂單到 Firebase 失敗");
     }
   };
 
-  const addToCart = () => {
+  /** Build order object based on current selection */
+  const buildItem = () => {
     const itm = { type: itemType, note };
-    if (itemType === "原味") itm.count = plainCount;
-    if (itemType === "特價綜合") {
-      if (comboTotal !== 3) return alert("請選滿 3 顆");
+    if (itemType === "原味") {
+      itm.plainCount = plainCount;
+    } else if (itemType === "特價綜合") {
+      if (comboTotal !== 3) {
+        alert("請選滿 3 顆");
+        return null;
+      }
       itm.comboCounts = { ...comboCounts };
-    }
-    if (itemType === "內餡") {
-      if (fillingTotal !== 3) return alert("請選滿 3 顆");
+    } else if (itemType === "內餡") {
+      if (fillingTotal !== 3) {
+        alert("請選滿 3 顆");
+        return null;
+      }
       itm.fillingCounts = { ...fillingCounts };
     }
-    setCart(c => [...c, itm]);
-    resetCounts();
+    return itm;
   };
 
-  // 直接送出單筆
+  /** Direct send single order */
   const directSend = () => {
-    const itm = { type: itemType, note };
-    if (itemType === "原味") itm.count = plainCount;
-    if (itemType === "特價綜合") {
-      if (comboTotal !== 3) return alert("請選滿 3 顆");
-      itm.comboCounts = { ...comboCounts };
-    }
-    if (itemType === "內餡") {
-      if (fillingTotal !== 3) return alert("請選滿 3 顆");
-      itm.fillingCounts = { ...fillingCounts };
-    }
+    const itm = buildItem();
+    if (!itm) return;
     pushOrder(itm);
     resetCounts();
     alert("已直接送出");
   };
 
-  const toggleSelect = i => setSelected(s => s.includes(i) ? s.filter(x=>x!==i) : [...s,i]);
+  /** Add to local cart only */
+  const addToCart = () => {
+    const itm = buildItem();
+    if (!itm) return;
+    setCart(c => [...c, itm]);
+    resetCounts();
+  };
 
-  // 送出並清空購物車
+  const toggleSelect = i => setSelected(s => 
+    s.includes(i) ? s.filter(x => x !== i) : [...s, i]
+  );
+
+  /** Send all cart items to Firestore */
   const sendCart = () => {
     if (!cart.length) return alert("購物車空");
     cart.forEach(itm => pushOrder(itm));
@@ -84,23 +94,24 @@ export default function OrderPage() {
     alert("已送出購物車訂單");
   };
 
-  const deleteOrClear = () => { 
+  /** Delete selected or clear cart */
+  const deleteOrClear = () => {
     setCart(c => selected.length 
       ? c.filter((_, i) => !selected.includes(i)) 
       : []
-    ); 
+    );
     setSelected([]);
   };
 
+  /** Format display label */
   const getItemLabel = it => {
-    if (it.type === "原味") return `原味：${it.count}份`;
+    if (it.type === "原味") return `原味：${it.plainCount}份`;
     const entries = it.comboCounts ?? it.fillingCounts;
-    const flavorStr = Object.entries(entries)
-      .filter(([,v])=>v>0)
-      .map(([k,v])=>`${k}×${v}`)
+    const str = Object.entries(entries)
+      .filter(([,v]) => v > 0)
+      .map(([k,v]) => `${k}×${v}`)
       .join("、");
-    const prefix = it.type === "特價綜合" ? "特綜：" : "內餡：";
-    return prefix + flavorStr;
+    return (it.comboCounts ? "特綜：" : "內餡：") + str;
   };
 
   const renderNumberRow = (label, val, minusD, plusD, onMinus, onPlus) => (
@@ -114,57 +125,60 @@ export default function OrderPage() {
 
   return (
     <div className="order-container">
-      {/* === 子分頁：原味／特價綜合／內餡 === */}
+      {/* 子分頁：原味／特價綜合／內餡 */}
       <div className="tabs">
         {TYPES.map(t => (
           <button
             key={t}
-            className={`tab-btn ${itemType===t?"active":""}`}
+            className={`tab-btn ${itemType === t ? "active" : ""}`}
             onClick={() => setItemType(t)}
           >
             {t}
-            {t!=="原味" && `（共${t==="特價綜合"?comboTotal:fillingTotal}/3）`}
+            {t !== "原味" && `（共${t === "特價綜合" ? comboTotal : fillingTotal}/3）`}
           </button>
         ))}
       </div>
 
-      {/* === 數量選擇 === */}
+      {/* 數量選擇 */}
       <div className="selector">
-        {itemType === "原味" && renderNumberRow(
-          "份數", plainCount, false, false,
-          () => changePlain(-1), () => changePlain(1)
-        )}
-        {itemType === "特價綜合" && FLAVORS.map(fl =>
+        {itemType === "原味" &&
           renderNumberRow(
-            fl,
-            comboCounts[fl],
-            comboCounts[fl]===0,
-            comboTotal>=3,
-            () => changeCombo(fl, -1),
-            () => changeCombo(fl, 1)
-          )
-        )}
-        {itemType === "內餡" && FLAVORS.map(fl =>
-          renderNumberRow(
-            fl,
-            fillingCounts[fl],
-            fillingCounts[fl]===0,
-            fillingTotal>=3,
-            () => changeFill(fl, -1),
-            () => changeFill(fl, 1)
-          )
-        )}
+            "份數", plainCount, false, false,
+            () => changePlain(-1), () => changePlain(1)
+          )}
+        {itemType === "特價綜合" &&
+          FLAVORS.map(fl =>
+            renderNumberRow(
+              fl,
+              comboCounts[fl],
+              comboCounts[fl] === 0,
+              comboTotal >= 3,
+              () => changeCombo(fl, -1),
+              () => changeCombo(fl, 1)
+            )
+          )}
+        {itemType === "內餡" &&
+          FLAVORS.map(fl =>
+            renderNumberRow(
+              fl,
+              fillingCounts[fl],
+              fillingCounts[fl] === 0,
+              fillingTotal >= 3,
+              () => changeFill(fl, -1),
+              () => changeFill(fl, 1)
+            )
+          )}
       </div>
 
-      {/* === 備註 === */}
+      {/* 備註 */}
       <input
         className="note-input"
         value={note}
         placeholder="備註…"
-        onChange={e=>setNote(e.target.value)}
+        onChange={e => setNote(e.target.value)}
       />
 
-      {/* === 第一列按鈕 === */}
+      {/* 第一列按鈕 */}
       <div className="actions-row actions-row--top">
         <button className="action-btn direct" onClick={directSend}>
           🚀 直接送出
@@ -174,30 +188,30 @@ export default function OrderPage() {
         </button>
       </div>
 
-      {/* === 購物車清單 === */}
-      {cart.length>0 && (
+      {/* 購物車清單 */}
+      {cart.length > 0 && (
         <div className="cart-list">
-          {cart.map((it,i)=>(
+          {cart.map((it, i) => (
             <label key={i} className="cart-item">
               <input
                 type="checkbox"
                 checked={selected.includes(i)}
-                onChange={()=>toggleSelect(i)}
+                onChange={() => toggleSelect(i)}
               />
               <span>
                 {getItemLabel(it)}
-                {it.note?`（${it.note}）`:``}
+                {it.note ? `（${it.note}）` : ""}
               </span>
             </label>
           ))}
         </div>
       )}
 
-      {/* === 第二列按鈕 === */}
-      {cart.length>0 && (
+      {/* 第二列按鈕 */}
+      {cart.length > 0 && (
         <div className="actions-row actions-row--bottom">
           <button className="action-btn clear" onClick={deleteOrClear}>
-            🗑️ {selected.length?"刪除選取":"清空購物車"}
+            🗑️ {selected.length ? "刪除選取" : "清空購物車"}
           </button>
           <button className="action-btn send" onClick={sendCart}>
             🚀 送出購物車訂單
