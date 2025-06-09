@@ -19,42 +19,18 @@ body {
   padding: 12px;
 }
 
-/* ---------- 頂端功能鍵 (撐滿螢幕寬度) ---------- */
-.top-nav {
-  display: flex;
-  gap: 8px;
-  /* 讓這排突破 .order-container 的左右 padding，貼齊螢幕邊 */
-  margin: 0 -12px 12px;
-  padding: 0 12px;
-}
-.top-nav button {
-  flex: 1;
-  min-width: 0;
-  padding: 16px 0;
-  font-size: 20px;
-  border-radius: 28px;
-  border: 1px solid var(--gray-border);
-  background: var(--gray-btn);
-  color: var(--primary-blue);
-}
-.top-nav button.active {
-  background: var(--primary-blue);
-  color: #fff;
-  border-color: var(--primary-blue);
-}
-
-/* ---------- 頂端功能鍵（原 .tabs，改名也可） ---------- */
+/* ---------- 分頁／主導航（原 .tabs） ---------- */
 .tabs {
   display: flex;
   gap: 8px;
-  /* 突破 .order-container 的左右 padding，貼滿螢幕 */
+  /* 突破 .order-container 的左右 padding，撐滿螢幕 */
   margin: 0 -12px 12px;
   padding: 0 12px;
 }
 .tab-btn {
-  flex: 1;           /* 平均分攤寬度 */
-  min-width: 0;      /* 文字過長時可收縮 */
-  padding: 16px 0;   /* 高度 */
+  flex: 1;             /* 平均分攤寬度 */
+  min-width: 0;        /* 文字過長時可正確收縮 */
+  padding: 16px 0;
   font-size: 20px;
   border-radius: 28px;
   border: 1px solid var(--gray-border);
@@ -68,6 +44,17 @@ body {
   border-color: var(--primary-blue);
 }
 
+/* ---------- 子導航（原味／特價綜合／內餡）若還要保留 ---------- */
+.sub-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 0 -12px 12px;
+  padding: 0 12px;
+}
+.sub-tabs .tab-btn {
+  flex: 1;
+  /* 其餘同上 .tab-btn */
+}
 
 /* ---------- 數量選擇 ---------- */
 .selector {
@@ -146,18 +133,12 @@ body {
   align-items: center;
   flex-wrap: nowrap;
 }
-
-/* 第一排（直接送出＋加入購物車）跟下方留 18px 間距 */
 .actions-row--top {
   margin-bottom: 18px;
 }
-
-/* 第二排（清空購物車＋送出購物車訂單）跟上方留 16px 間距 */
 .actions-row--bottom {
   margin-top: 16px;
 }
-
-/* 按鈕寬度依內容自動調整 */
 .actions-row .action-btn {
   flex: none;
   width: auto;
