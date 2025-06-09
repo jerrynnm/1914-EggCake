@@ -1,31 +1,24 @@
-/* CookingPage.css */
-.cooking-wrapper {
+.cook-wrap {
   padding: 12px 4%;
   max-width: 680px;
   margin: 0 auto;
 }
 
-.order-card {
+.card {
   border: 1px solid #e0e0e0;
   border-radius: 10px;
   padding: 14px;
   margin: 18px 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 5px rgba(0,0,0,.05);
 }
 
-.order-card h3 {
-  margin: 0 0 8px 0;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.order-card ul {
-  list-style: none;
-  padding: 0;
+.card ul {
   margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.order-card li {
+.card li {
   font-size: 16px;
   margin: 6px 0;
 }
@@ -36,8 +29,8 @@
   margin-top: 10px;
 }
 
-.done-btn,
-.del-btn {
+.done,
+.del {
   flex: 1;
   padding: 10px 0;
   border: none;
@@ -47,16 +40,11 @@
   color: #fff;
 }
 
-.done-btn {
-  background: #2ecc71;
-}
+.done { background: #2ecc71; }
+.del  { background: #ff5959; }
 
-.del-btn {
-  background: #ff5959;
-}
-
-@media (max-width: 420px) {
-  .order-card h3 { font-size: 18px; }
-  .order-card li { font-size: 15px; }
-  .done-btn, .del-btn { font-size: 15px; }
+.empty {
+  text-align: center;
+  margin-top: 32px;
+  color: #777;
 }
