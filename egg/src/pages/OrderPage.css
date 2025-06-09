@@ -1,41 +1,147 @@
-/* 把數量選擇一整排，且垂直置中 */
-.selector {
+/* ------ Layout container ------ */
+.order-container {
+  padding: 12px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+/* ------ Top tabs (原味 / 特價綜合 / 內餡) ------ */
+.tabs {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: nowrap; /* 不換行 */
+  gap: 8px;
   margin-bottom: 12px;
 }
 
-/* 每個口味的小區塊 */
+.tab-btn {
+  flex: 1;
+  padding: 8px 0;
+  font-size: 16px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  background: #f5f5f5;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  background: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}
+
+/* ------ 數量選擇區 ------ */
+.selector {
+  display: flex;
+  flex-direction: column;   /* 直排 */
+  align-items: flex-start;  /* 口味標籤靠左 */
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
 .number-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-/* 把三個主要操作放一排 */
-.actions-row {
-  display: flex;
-  justify-content: center;
   gap: 12px;
-  margin-bottom: 12px;
-  flex-wrap: wrap; /* 螢幕寬度不足時會換下一行 */
 }
 
-/* 把購物車送出/刪除兩個按鈕也擺 inline */
+.flavor-label {
+  min-width: 60px;           /* 對齊口味名稱 */
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.num-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  border: none;
+  background: #e5e5e5;
+  font-size: 24px;
+  line-height: 48px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.num-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.num-display {
+  font-size: 20px;
+  min-width: 28px;
+  text-align: center;
+}
+
+/* ------ 備註輸入 ------ */
+.note-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+/* ------ 主要操作按鈕 ------ */
+.actions-row,
 .cart-actions {
   display: flex;
-  justify-content: center;
   gap: 12px;
-  margin-top: 12px;
+  flex-wrap: wrap;           /* 寬度不足時自動換行 */
+  margin-bottom: 16px;
 }
 
-/* 統一按鈕大小 */
-.action-btn, .num-btn {
-  flex-shrink: 0;
-  width: 80px;      /* 依手機螢幕寬度微調 */
-  height: 40px;
+.action-btn {
+  flex: 1;
+  min-width: 120px;          /* 最小寬度，確保點擊面積 */
+  padding: 16px 0;
+  font-size: 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+}
+
+/* 配色 */
+.action-btn.direct { background: #007bff; }
+.action-btn.cart   { background: #ff9900; }
+.action-btn.send   { background: #28a745; }
+.action-btn.clear  { background: #dc3545; }
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ------ 購物車清單 ------ */
+.cart-list {
+  margin-bottom: 12px;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 16px;
+  margin-bottom: 8px;
 }
 
+.cart-item input {
+  width: 24px;
+  height: 24px;
+}
+
+@media (max-width: 480px) {
+  /* 小螢幕額外微調 */
+  .num-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+  }
+  .action-btn {
+    font-size: 16px;
+    min-width: 100px;
+    padding: 14px 0;
+  }
+}
