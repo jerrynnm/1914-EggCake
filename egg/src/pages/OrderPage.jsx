@@ -6,6 +6,7 @@ const TYPES   = ["原味", "特價綜合", "內餡"];
 
 export default function OrderPage() {
   /* -------------------- state -------------------- */
+  const [page, setPage] = useState("點餐");        // 新增頂端分頁 state
   const [itemType, setItemType] = useState("原味");
   const [plainCount, setPlainCount] = useState(1);
   const [comboCounts, setComboCounts] = useState({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
@@ -44,10 +45,10 @@ export default function OrderPage() {
     resetCounts();
   };
 
-  const directSend   = () => { alert("已直接送出"); resetCounts(); };
-  const toggleSelect = i => setSelected(s => s.includes(i) ? s.filter(x => x !== i) : [...s, i]);
-  const sendCart     = () => { if (!cart.length) return alert("購物車空"); alert("已送出"); setCart([]); setSelected([]); };
-  const deleteOrClear= () => { setCart(c => selected.length ? c.filter((_, i) => !selected.includes(i)) : []); setSelected([]); };
+  const directSend    = () => { alert("已直接送出"); resetCounts(); };
+  const toggleSelect  = i => setSelected(s => s.includes(i) ? s.filter(x => x !== i) : [...s, i]);
+  const sendCart      = () => { if (!cart.length) return alert("購物車空"); alert("已送出"); setCart([]); setSelected([]); };
+  const deleteOrClear = () => { setCart(c => selected.length ? c.filter((_, i) => !selected.includes(i)) : []); setSelected([]); };
 
   /* 產生顯示字串 */
   const getItemLabel = it => {
@@ -65,102 +66,135 @@ export default function OrderPage() {
       <span className="flavor-label">{label}</span>
       <button className="num-btn" onClick={onMinus} disabled={minusD}>-</button>
       <span className="num-display">{val}</span>
-      <button className="num-btn" onClick={onPlus} disabled={plusD}>+</button>
+      <button className="num-btn" onClick={onPlus}  disabled={plusD}>+</button>
     </div>
   );
 
   /* -------------------- render -------------------- */
   return (
     <div className="order-container">
-      {/* Tabs */}
-      <div className="tabs">
-        {TYPES.map(t => (
-          <button
-            key={t}
-            className={`tab-btn ${itemType === t ? "active" : ""}`}
-            onClick={() => setItemType(t)}
-          >
-            {t}{t !== "原味" && `（共${t === "特價綜合" ? comboTotal : fillingTotal}/3）`}
-          </button>
-        ))}
-      </div>
-
-      {/* Selector */}
-      <div className="selector">
-        {itemType === "原味" && renderNumberRow(
-          "份數", plainCount, false, false,
-          () => changePlain(-1), () => changePlain(1)
-        )}
-        {itemType === "特價綜合" && FLAVORS.map(fl =>
-          renderNumberRow(
-            fl,
-            comboCounts[fl],
-            comboCounts[fl] === 0,
-            comboTotal >= 3,
-            () => changeCombo(fl, -1),
-            () => changeCombo(fl, 1)
-          )
-        )}
-        {itemType === "內餡" && FLAVORS.map(fl =>
-          renderNumberRow(
-            fl,
-            fillingCounts[fl],
-            fillingCounts[fl] === 0,
-            fillingTotal >= 3,
-            () => changeFill(fl, -1),
-            () => changeFill(fl, 1)
-          )
-        )}
-      </div>
-
-      {/* 備註 */}
-      <input
-        className="note-input"
-        value={note}
-        placeholder="備註…"
-        onChange={e => setNote(e.target.value)}
-      />
-
-      {/* 第一列按鈕 */}
-      <div className="actions-row actions-row--top">
-        <button className="action-btn direct" onClick={directSend}>
-          🚀 直接送出
+      {/* ====== 最上方三分頁按鈕 ====== */}
+      <div className="top-nav">
+        <button
+          className={page === "點餐" ? "active" : ""}
+          onClick={() => setPage("點餐")}
+        >
+          🛒 點餐
         </button>
-        <button className="action-btn cart" onClick={addToCart}>
-          🛒 加入購物車
+        <button
+          className={page === "製作" ? "active" : ""}
+          onClick={() => setPage("製作")}
+        >
+          🔍 製作
+        </button>
+        <button
+          className={page === "完成" ? "active" : ""}
+          onClick={() => setPage("完成")}
+        >
+          ✅ 完成
         </button>
       </div>
 
-      {/* 購物車清單 */}
-      {cart.length > 0 && (
-        <div className="cart-list">
-          {cart.map((it, i) => (
-            <label key={i} className="cart-item">
-              <input
-                type="checkbox"
-                checked={selected.includes(i)}
-                onChange={() => toggleSelect(i)}
-              />
-              <span>
-                {getItemLabel(it)}
-                {it.note ? `（${it.note}）` : ""}
-              </span>
-            </label>
-          ))}
+      {/* 如果未在「點餐」頁，就顯示提示文字或其他內容 */}
+      {page !== "點餐" ? (
+        <div style={{ textAlign: "center", marginTop: "50px", color: "#666" }}>
+          {page} 頁面內容尚未實作
         </div>
-      )}
+      ) : (
+        <>
+          {/* Tabs */}
+          <div className="tabs">
+            {TYPES.map(t => (
+              <button
+                key={t}
+                className={`tab-btn ${itemType === t ? "active" : ""}`}
+                onClick={() => setItemType(t)}
+              >
+                {t}
+                {t !== "原味" && `（共${t === "特價綜合" ? comboTotal : fillingTotal}/3）`}
+              </button>
+            ))}
+          </div>
 
-      {/* 第二列按鈕 */}
-      {cart.length > 0 && (
-        <div className="actions-row actions-row--bottom">
-          <button className="action-btn clear" onClick={deleteOrClear}>
-            🗑️ {selected.length ? "刪除選取" : "清空購物車"}
-          </button>
-          <button className="action-btn send" onClick={sendCart}>
-            🚀 送出購物車訂單
-          </button>
-        </div>
+          {/* Selector */}
+          <div className="selector">
+            {itemType === "原味" && renderNumberRow(
+              "份數", plainCount, false, false,
+              () => changePlain(-1), () => changePlain(1)
+            )}
+            {itemType === "特價綜合" && FLAVORS.map(fl =>
+              renderNumberRow(
+                fl,
+                comboCounts[fl],
+                comboCounts[fl] === 0,
+                comboTotal >= 3,
+                () => changeCombo(fl, -1),
+                () => changeCombo(fl, 1)
+              )
+            )}
+            {itemType === "內餡" && FLAVORS.map(fl =>
+              renderNumberRow(
+                fl,
+                fillingCounts[fl],
+                fillingCounts[fl] === 0,
+                fillingTotal >= 3,
+                () => changeFill(fl, -1),
+                () => changeFill(fl, 1)
+              )
+            )}
+          </div>
+
+          {/* 備註 */}
+          <input
+            className="note-input"
+            value={note}
+            placeholder="備註…"
+            onChange={e => setNote(e.target.value)}
+          />
+
+          {/* 第一列按鈕 */}
+          <div className="actions-row actions-row--top">
+            <button className="action-btn direct" onClick={directSend}>
+              🚀 直接送出
+            </button>
+            <button className="action-btn cart" onClick={addToCart}>
+              🛒 加入購物車
+            </button>
+          </div>
+
+          {/* 購物車清單 */}
+          {cart.length > 0 && (
+            <div className="cart-list">
+              {cart.map((it, i) => (
+                <label key={i} className="cart-item">
+                  <input
+                    type="checkbox"
+                    checked={selected.includes(i)}
+                    onChange={() => toggleSelect(i)}
+                  />
+                  <span>
+                    {getItemLabel(it)}
+                    {it.note ? `（${it.note}）` : ""}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+
+          {/* 第二列按鈕 */}
+          {cart.length > 0 && (
+            <div className="actions-row actions-row--bottom">
+              <button className="action-btn clear" onClick={deleteOrClear}>
+                🗑️ {selected.length ? "刪除選取" : "清空購物車"}
+              </button>
+              <button className="action-btn send" onClick={sendCart}>
+                🚀 送出購物車訂單
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
 }
+
