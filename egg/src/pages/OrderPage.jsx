@@ -44,20 +44,20 @@ export default function OrderPage() {
 
     if (itemType === "原味") {
       if (plainCount <= 0) return alert("份數必須 ≥1");
-      items.push({ name: "原味雞蛋糕", qty: plainCount });
+      items.push({ name: "份", qty: plainCount });
     }
 
     if (itemType === "特價綜合") {
       if (comboTotal !== 3) return alert("特價綜合必須選滿 3 顆");
       Object.entries(comboCounts).forEach(([fl, cnt]) => {
-        if (cnt > 0) items.push({ name: `${fl}雞蛋糕`, qty: cnt });
+        if (cnt > 0) items.push({ name: `${fl}`, qty: cnt });
       });
     }
 
     if (itemType === "內餡") {
       if (fillingTotal !== 3) return alert("內餡雞蛋糕必須選滿 3 顆");
       Object.entries(fillingCounts).forEach(([fl, cnt]) => {
-        if (cnt > 0) items.push({ name: `${fl}雞蛋糕`, qty: cnt });
+        if (cnt > 0) items.push({ name: `${fl}`, qty: cnt });
       });
     }
 
