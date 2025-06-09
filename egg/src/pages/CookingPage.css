@@ -1,98 +1,25 @@
-/* 1. 品項選擇按鈕 (selector-btn) */
-.item-selector {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.selector-btn {
-  flex: 1 1 calc(33% - 16px);
-  padding: 12px 0;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 20px;
-  background: #f5f5f5;
-  text-align: center;
-}
-.selector-btn.active {
-  background: #007bff;
-  color: #fff;
-  border-color: #007bff;
+/* CookingPage.css */
+.order-card { 
+  border: 1px solid #ddd; 
+  border-radius: 8px; 
+  padding: 12px; 
+  margin: 14px 6px;
 }
 
-/* 2. 所有主要動作按鈕全寬且加大點擊範圍 */
-.full-width {
-  display: block;
-  width: 100%;
-  padding: 14px 0;
-  font-size: 16px;
-  margin: 8px 0;
-  border: none;
-  border-radius: 8px;
+.btn-row{
+  display:flex;
+  gap:12px;
+  margin-top:8px;
 }
+.done-btn,.del-btn{
+  flex:1;           /* 兩顆均分寬度 → 並排 */
+  padding:8px 0;
+  font-size:15px;
+  border:none;
+  border-radius:6px;
+  font-weight:bold;
+}
+.done-btn{background:#37c937;color:#fff;}
+.del-btn {background:#ff5c5c;color:#fff;}
 
-/* 加入購物車 */
-.btn-confirm-add {
-  background: #ffa500;
-  color: #fff;
-}
-
-/* 直接送出 */
-.btn-direct-send {
-  background: #0099ff;
-  color: #fff;
-}
-
-/* 送出購物車訂單 */
-.btn-submit-cart {
-  background: #28a745;
-  color: #fff;
-}
-
-/* 刪除選取 */
-.btn-delete-selected {
-  background: #dc3545;
-  color: #fff;
-}
-
-/* 清空購物車 */
-.btn-clear-cart {
-  background: #6c757d;
-  color: #fff;
-}
-
-/* 3. 購物車項目 */
-.cart-item-card {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px;
-  border-bottom: 1px solid #eee;
-}
-
-/* 勾選框與文字對齊 */
-.cart-item-card input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-}
-
-/* 4. 購物車按鈕群 */
-.cart-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-/* 大螢幕（平板／桌面）時並排 */
-@media (min-width: 600px) {
-  .cart-actions {
-    flex-direction: row;
-  }
-  .cart-actions .full-width {
-    flex: 1;
-    margin: 0 8px;
-  }
-}
 
