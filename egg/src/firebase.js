@@ -13,41 +13,38 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-// 1) Gather your env vars into a config object
+/* ❶ 直接把 Firebase Console → 專案設定 裡的 SDK Config 貼進來 */
 const firebaseConfig = {
-  apiKey:             process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain:         process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  databaseURL:        process.env.REACT_APP_FIREBASE_DATABASE_URL,
-  projectId:          process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket:      process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId:  process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId:              process.env.REACT_APP_FIREBASE_APP_ID,
+  apiKey: "AIzaSyBZiaj4pHHhJy_j9Mu5TlH7CEIwTZ143JyQ",
+  authDomain: "egg-waffle-ordering.firebaseapp.com",
+  databaseURL: "https://egg-waffle-ordering-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "egg-waffle-ordering",
+  storageBucket: "egg-waffle-ordering.appspot.com",
+  messagingSenderId: "439794130729",
+  appId: "1:439794130729:web:f4e6b38c85c6d48051a138",
 };
 
-// 2) Quick debug: ensure none are undefined
-console.log("🔥 Firebase config:", firebaseConfig);
+console.log("🔥 目前使用的 Firebase Config：", firebaseConfig); // 確認不會是 undefined
 
-// 3) Initialize App and Firestore
+/* ❷ 初始化 */
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);          // ← Export this so other modules can import { db }
+export const db = getFirestore(app);
 const ordersCol = collection(db, "orders");
 
-/**
- * 新增一筆訂單到 Firestore
- */
+/* ❸ 新增訂單 */
 export async function addOrder(orderData) {
   const payload = {
     ...orderData,
-    status:    "pending",
+    status: "pending",
     createdAt: serverTimestamp(),
   };
-  return await addDoc(ordersCol, payload);
+  const ref = await addDoc(ordersCol, payload);
+  console.log("✔️ 已寫入 Firestore，文件 ID =", ref.id);
+  return ref.id;
 }
 
-/**
- * 監聽 status === "pending" 的訂單
- */
-export function listenPendingOrders(callback) {
+/* ❹ 監聽 pending 訂單 */
+export function listenPendingOrders(cb) {
   const q = query(
     ordersCol,
     where("status", "==", "pending"),
@@ -55,15 +52,13 @@ export function listenPendingOrders(callback) {
   );
   return onSnapshot(q, snap => {
     const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    callback(list);
+    cb(list);
   });
 }
 
-/**
- * 更新訂單的狀態
- */
-export async function updateOrderStatus(orderId, status) {
-  const ref = doc(db, "orders", orderId);
+/* ❺ 更新訂單狀態 */
+export async function updateOrderStatus(id, status) {
+  const ref = doc(db, "orders", id);
   await updateDoc(ref, { status });
 }
 
