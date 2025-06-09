@@ -13,9 +13,8 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-// TODO: 用你的實際 config 值替換下面各欄位
-// src/firebase.js
-console.log("🔥 Firebase config:", {
+// 讀取環境變數（要確保 .env 或 Vercel 上都有正確設定 REACT_APP_ 前綴的變數）
+const firebaseConfig = {
   apiKey:             process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain:         process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
   databaseURL:        process.env.REACT_APP_FIREBASE_DATABASE_URL,
@@ -23,10 +22,14 @@ console.log("🔥 Firebase config:", {
   storageBucket:      process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
   messagingSenderId:  process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
   appId:              process.env.REACT_APP_FIREBASE_APP_ID,
-});
+};
 
-// 初始化 App
+// 在初始化前打印出來，確認都不是 undefined
+console.log("🔥 Firebase config:", firebaseConfig);
+
+// 初始化 Firebase App
 const app = initializeApp(firebaseConfig);
+
 // 初始化 Firestore
 const db = getFirestore(app);
 
@@ -48,7 +51,7 @@ const ordersCol = collection(db, "orders");
 export async function addOrder(orderData) {
   const payload = {
     ...orderData,
-    status: "pending",          // 一律先標為 pending
+    status: "pending",            // 一律先標為 pending
     createdAt: serverTimestamp(), // 自動加上 timestamp
   };
   const docRef = await addDoc(ordersCol, payload);
