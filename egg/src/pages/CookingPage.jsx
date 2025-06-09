@@ -1,72 +1,79 @@
 // CookingPage.jsx
-import { useEffect, useState } from "react";
-import { db } from "../firebase";          // ← 你的 Firebase 初始化
+import React, { useEffect, useState } from "react";
+import "./CookingPage.css";
+import { db } from "../firebase";   // ← 你的 Firebase 初始化
 import {
-  collection, query, where,
-  orderBy, onSnapshot, doc, updateDoc, deleteDoc
+  collection, query, where, orderBy,
+  onSnapshot, doc, updateDoc, deleteDoc
 } from "firebase/firestore";
 
 export default function CookingPage() {
-  // 料理中訂單
+  // Firestore 抓回的訂單
   const [orders, setOrders] = useState([]);
-  // 每筆訂單被勾選的 item 索引
-  const [selected, setSelected] = useState({}); // { orderId: Set([idx, ...]) }
+  // { orderId: Set<itemIndex> } —— 被勾選的餐點
+  const [selected, setSelected] = useState({});
 
-  // ① 即時監聽
+  /* ──────────────────────────────
+     1️⃣  監聽「製作中(pending)」訂單
+     ────────────────────────────── */
   useEffect(() => {
     const q = query(
       collection(db, "orders"),
-      where("status", "==", "cooking"),
+      where("status", "==", "pending"),      // ← 依需求更換
       orderBy("createdAt", "asc")
     );
     const unsub = onSnapshot(q, snap => {
-      setOrders(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setOrders(
+        snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      );
     });
     return () => unsub();
   }, []);
 
-  // 勾 / 取消勾
+  /* ──────────────────────────────
+     2️⃣  互動：勾 / 取消勾
+     ────────────────────────────── */
   const toggleCheck = (oid, idx) => {
     setSelected(prev => {
-      const newSet = new Set(prev[oid] || []);
-      newSet.has(idx) ? newSet.delete(idx) : newSet.add(idx);
-      return { ...prev, [oid]: newSet };
+      const set = new Set(prev[oid] || []);
+      set.has(idx) ? set.delete(idx) : set.add(idx);
+      return { ...prev, [oid]: set };
     });
   };
 
-  // 完成
-  const handleComplete = async (order) => {
+  /* ──────────────────────────────
+     3️⃣  完成：整筆 or 部分
+     ────────────────────────────── */
+  const handleComplete = async order => {
     const checked = [...(selected[order.id] || [])];
-    // 2-1 完成整筆
+    // 沒勾＝整筆完成
     if (!checked.length) {
       await updateDoc(doc(db, "orders", order.id), { status: "done" });
-    }
-    // 2-2 完成部分
-    else {
+    } else {
       const remain = order.items.filter((_, i) => !checked.includes(i));
+      // 部分完成 → 移除已完成項；全勾完就直接整筆 done
       if (remain.length === 0) {
-        // 全部勾光 → 直接整筆完成
         await updateDoc(doc(db, "orders", order.id), { status: "done" });
       } else {
         await updateDoc(doc(db, "orders", order.id), { items: remain });
       }
     }
-    // 清掉勾選
+    // 清勾選
     setSelected(prev => ({ ...prev, [order.id]: new Set() }));
   };
 
-  // 刪除
-  const handleDelete = async (order) => {
+  /* ──────────────────────────────
+     4️⃣  刪除：整筆 or 部分
+     ────────────────────────────── */
+  const handleDelete = async order => {
     const checked = [...(selected[order.id] || [])];
-    // 3-1 刪整筆
     if (!checked.length) {
+      // 沒勾＝整筆刪除
       await deleteDoc(doc(db, "orders", order.id));
-    }
-    // 3-2 刪部分
-    else {
+    } else {
       const remain = order.items.filter((_, i) => !checked.includes(i));
       if (remain.length === 0) {
-        // 全部勾光 → 直接刪掉整筆
+        // 全勾 → 直接刪 doc
         await deleteDoc(doc(db, "orders", order.id));
       } else {
         await updateDoc(doc(db, "orders", order.id), { items: remain });
@@ -79,36 +86,46 @@ export default function CookingPage() {
     <div className="cooking-wrapper">
       <h2>🍳 製作中訂單</h2>
 
-      {orders.map((o, ordIdx) => (
+      {orders.map((o, idx) => (
         <div key={o.id} className="order-card">
-          {/* 🔢 顯示順序編號（ordIdx 由 0 開始） */}
-          <h3>訂單 #{ordIdx + 1}</h3>
+          {/* 🔢 每日遞增訂單號碼（已寫入 orderNo） */}
+          <h3>訂單 #{o.orderNo}</h3>
 
           <ul>
-            {o.items.map((item, idx) => (
-              <li key={idx}>
+            {o.items.map((it, i) => (
+              <li key={i}>
                 <label>
                   <input
                     type="checkbox"
-                    checked={selected[o.id]?.has(idx) || false}
-                    onChange={() => toggleCheck(o.id, idx)}
+                    checked={selected[o.id]?.has(i) || false}
+                    onChange={() => toggleCheck(o.id, i)}
                   />
-                  {item.name} × {item.qty}
+                  {it.name} × {it.qty}
                 </label>
               </li>
             ))}
           </ul>
 
           <div className="btn-row">
-            <button className="done-btn"  onClick={() => handleComplete(o)}>
+            <button
+              className="done-btn"
+              onClick={() => handleComplete(o)}
+            >
               ✅ 完成
             </button>
-            <button className="del-btn"   onClick={() => handleDelete(o)}>
+            <button
+              className="del-btn"
+              onClick={() => handleDelete(o)}
+            >
               🗑️ 刪除
             </button>
           </div>
         </div>
       ))}
+
+      {orders.length === 0 && (
+        <p style={{ textAlign: "center", marginTop: 32 }}>（目前沒有等待中的訂單）</p>
+      )}
     </div>
   );
 }
