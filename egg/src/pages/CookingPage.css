@@ -1,25 +1,62 @@
 /* CookingPage.css */
-.order-card { 
-  border: 1px solid #ddd; 
-  border-radius: 8px; 
-  padding: 12px; 
-  margin: 14px 6px;
+.cooking-wrapper {
+  padding: 12px 4%;
+  max-width: 680px;
+  margin: 0 auto;
 }
 
-.btn-row{
-  display:flex;
-  gap:12px;
-  margin-top:8px;
+.order-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 14px;
+  margin: 18px 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
-.done-btn,.del-btn{
-  flex:1;           /* 兩顆均分寬度 → 並排 */
-  padding:8px 0;
-  font-size:15px;
-  border:none;
-  border-radius:6px;
-  font-weight:bold;
+
+.order-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 600;
 }
-.done-btn{background:#37c937;color:#fff;}
-.del-btn {background:#ff5c5c;color:#fff;}
 
+.order-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 
+.order-card li {
+  font-size: 16px;
+  margin: 6px 0;
+}
+
+.btn-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.done-btn,
+.del-btn {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.done-btn {
+  background: #2ecc71;
+}
+
+.del-btn {
+  background: #ff5959;
+}
+
+@media (max-width: 420px) {
+  .order-card h3 { font-size: 18px; }
+  .order-card li { font-size: 15px; }
+  .done-btn, .del-btn { font-size: 15px; }
+}
