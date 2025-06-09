@@ -13,7 +13,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-// 一定要先把 config 赋给一个常量！
+// 1️⃣ 把 config 先存常量，再初始化
 const firebaseConfig = {
   apiKey:             process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain:         process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -24,44 +24,81 @@ const firebaseConfig = {
   appId:              process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-// 打印出来确认都不是 undefined
+// 2️⃣ 强化日志，确认每个字段都已经被注入
 console.log("🔥 Firebase config:", firebaseConfig);
 
-// 初始化 Firebase
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
+let app, db;
+try {
+  app = initializeApp(firebaseConfig);
+  db = getFirestore(app);
+  console.log("✅ Firebase initialized OK");
+} catch (e) {
+  console.error("❌ Firebase initialization failed:", e);
+}
 
-// Firestore 上的 orders 集合引用
-const ordersCol = collection(db, "orders");
+const ordersCol = db ? collection(db, "orders") : null;
 
-/** 新增訂單 */
+/**
+ * 新增一筆訂單到 Firestore
+ */
 export async function addOrder(orderData) {
+  if (!ordersCol) {
+    const msg = "`ordersCol` is not initialized";
+    console.error(msg);
+    throw new Error(msg);
+  }
   const payload = {
     ...orderData,
     status:    "pending",
     createdAt: serverTimestamp(),
   };
-  const docRef = await addDoc(ordersCol, payload);
-  return docRef.id;
+  try {
+    console.log("✉️  Sending order to Firestore:", payload);
+    const docRef = await addDoc(ordersCol, payload);
+    console.log("✔️  Order written with ID:", docRef.id);
+    return docRef.id;
+  } catch (e) {
+    console.error("❌ addOrder failed:", e.code, e.message);
+    throw e;
+  }
 }
 
-/** 監聽製作中訂單 */
+/**
+ * 監聽 status === "pending" 的訂單
+ */
 export function listenPendingOrders(callback) {
+  if (!ordersCol) {
+    console.error("`ordersCol` is not initialized, cannot listen");
+    return () => {};
+  }
   const q = query(
     ordersCol,
     where("status", "==", "pending"),
     orderBy("createdAt", "asc")
   );
-  return onSnapshot(q, snap => {
+  return onSnapshot(q, (snap) => {
     const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    console.log("🔔 pendingList updated:", list);
     callback(list);
+  }, (err) => {
+    console.error("❌ listenPendingOrders error:", err);
   });
 }
 
-/** 更新訂單狀態 */
+/**
+ * 更新訂單的狀態
+ */
 export async function updateOrderStatus(orderId, status) {
+  if (!db) {
+    console.error("`db` is not initialized");
+    return;
+  }
   const ref = doc(db, "orders", orderId);
-  await updateDoc(ref, { status });
+  try {
+    await updateDoc(ref, { status });
+    console.log(`🔄 Order ${orderId} status -> ${status}`);
+  } catch (e) {
+    console.error("❌ updateOrderStatus failed:", e);
+  }
 }
-
 
