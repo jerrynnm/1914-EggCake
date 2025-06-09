@@ -1,132 +1,150 @@
-// src/pages/CookingPage.jsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "./CookingPage.css";
 import { db } from "../firebase";
 import {
-  collection,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-  doc,
-  updateDoc,
-  deleteDoc,
-  serverTimestamp
+  collection, onSnapshot,
+  doc, updateDoc, deleteDoc, serverTimestamp,
+  // 若要用 where("status","==","pending") 就另外 import
 } from "firebase/firestore";
 
-export default function CookingPage() {
-  const [orders, setOrders]   = useState([]);          // Firestore 撈回的訂單
-  const [selected, setSelect] = useState({});         // { orderId: Set<index> }
+/** 把「不確定格式」的文件轉成 [{name,qty}] 陣列 */
+const fallbackParser = (docData) => {
+  // 1. 新版 items
+  if (Array.isArray(docData.items) && docData.items.length) return docData.items;
 
-  /* ─────────────── ① 監聽 status=pending ─────────────── */
+  // 2. 舊版 plainCount
+  if (docData.plainCount)
+    return [{ name: "原味雞蛋糕", qty: docData.plainCount }];
+
+  // 3. 舊版特價綜合 / 內餡
+  const list = [];
+  const buckets = ["comboCounts", "fillingCounts"];
+  buckets.forEach((b) => {
+    if (docData[b]) {
+      Object.entries(docData[b]).forEach(([fl, cnt]) => {
+        if (cnt > 0) list.push({ name: `${fl}雞蛋糕`, qty: cnt });
+      });
+    }
+  });
+  if (list.length) return list;
+
+  // 4. 萬不得已回傳占位
+  return [{ name: "未知餐點", qty: 1 }];
+};
+
+export default function CookingPage() {
+  const [orders, setOrders] = useState([]);         // [{id, data, list}]
+  const [selected, setSelected] = useState({});     // {orderId:Set(idx)}
+
+  /* 📡 監聽全部訂單（你想過濾就把 where 打開） */
   useEffect(() => {
-    const q = query(
-      collection(db, "orders"),
-      where("status", "==", "pending"),
-      orderBy("createdAt", "asc")
-    );
+    const q = collection(db, "orders");
     const unsub = onSnapshot(q, snap => {
-      setOrders(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const arr = snap.docs.map(d => {
+        const data = d.data();
+        return {
+          id: d.id,
+          data,
+          list: fallbackParser(data)   // 轉成 [{name,qty}]
+        };
+      });
+      setOrders(arr);
     });
     return () => unsub();
   }, []);
 
-  /* ─────────────── ② 勾 / 取消勾 ─────────────── */
+  /* ✔ 勾 / 取消勾 */
   const toggle = (oid, idx) =>
-    setSelect(prev => {
-      const set = new Set(prev[oid] || []);
-      set.has(idx) ? set.delete(idx) : set.add(idx);
-      return { ...prev, [oid]: set };
+    setSelected(p => {
+      const s = new Set(p[oid] || []);
+      s.has(idx) ? s.delete(idx) : s.add(idx);
+      return { ...p, [oid]: s };
     });
 
-  /* ─────────────── ③ 完成（整筆 or 部分） ─────────────── */
-  const complete = async (order, list) => {
-    const checked = [...(selected[order.id] || [])];
-
+  /* ✅ 完成 */
+  const finish = async (ord) => {
+    const checked = [...(selected[ord.id] || [])];
     if (!checked.length) {
-      // 沒勾 → 整筆完成
-      await updateDoc(doc(db, "orders", order.id), {
+      await updateDoc(doc(db, "orders", ord.id), {
         status: "done",
         updatedAt: serverTimestamp()
       });
     } else {
-      // 勾部分 → 移除已完成餐點；全勾完就改 done
-      const remain = list.filter((_, i) => !checked.includes(i));
+      const remain = ord.list.filter((_, i) => !checked.includes(i));
       remain.length
-        ? await updateDoc(doc(db, "orders", order.id), { items: remain })
-        : await updateDoc(doc(db, "orders", order.id), {
+        ? await updateDoc(doc(db, "orders", ord.id), { items: remain })
+        : await updateDoc(doc(db, "orders", ord.id), {
             status: "done",
             updatedAt: serverTimestamp()
           });
     }
-    setSelect(prev => ({ ...prev, [order.id]: new Set() }));
+    setSelected(p => ({ ...p, [ord.id]: new Set() }));
   };
 
-  /* ─────────────── ④ 刪除（整筆 or 部分） ─────────────── */
-  const remove = async (order, list) => {
-    const checked = [...(selected[order.id] || [])];
-
+  /* 🗑️ 刪除 */
+  const remove = async (ord) => {
+    const checked = [...(selected[ord.id] || [])];
     if (!checked.length) {
-      // 沒勾 → 整筆刪除
-      await deleteDoc(doc(db, "orders", order.id));
+      await deleteDoc(doc(db, "orders", ord.id));
     } else {
-      // 勾部分 → 只刪選取；全勾完則刪文件
-      const remain = list.filter((_, i) => !checked.includes(i));
+      const remain = ord.list.filter((_, i) => !checked.includes(i));
       remain.length
-        ? await updateDoc(doc(db, "orders", order.id), { items: remain })
-        : await deleteDoc(doc(db, "orders", order.id));
+        ? await updateDoc(doc(db, "orders", ord.id), { items: remain })
+        : await deleteDoc(doc(db, "orders", ord.id));
     }
-    setSelect(prev => ({ ...prev, [order.id]: new Set() }));
+    setSelected(p => ({ ...p, [ord.id]: new Set() }));
   };
 
-  /* ─────────────── ⑤ UI ─────────────── */
+  /* ✏️ 修正數量（修改第一個選中）*/
+  const revise = async (ord) => {
+    const checked = [...(selected[ord.id] || [])];
+    if (!checked.length) return alert("請先勾選要修改的品項");
+    const idx = checked[0];
+    const current = ord.list[idx];
+    const str = prompt(`「${current.name}」目前 ${current.qty} 份，輸入新數量：`, current.qty);
+    if (str === null) return;
+    const n = parseInt(str, 10);
+    if (isNaN(n) || n <= 0) return alert("數量需為正整數");
+
+    const newList = ord.list.map((it, i) =>
+      i === idx ? { ...it, qty: n } : it
+    );
+    await updateDoc(doc(db, "orders", ord.id), { items: newList });
+    setSelected(p => ({ ...p, [ord.id]: new Set() })); // 清勾選
+  };
+
+  /* ------------------- UI ------------------- */
   return (
     <div className="cook-wrap">
-      {orders.map(order => {
-        /* ⭐ 保險：舊文件沒有 items 時，用舊欄位拼成 list */
-        const list =
-          Array.isArray(order.items) && order.items.length
-            ? order.items
-            : [{ name: order.type || "未知", qty: order.plainCount || 1 }];
+      {orders.map(ord => (
+        <div key={ord.id} className="card">
+          <ul>
+            {ord.list.map((it, i) => (
+              <li key={i}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={selected[ord.id]?.has(i) || false}
+                    onChange={() => toggle(ord.id, i)}
+                  />
+                  {it.name} × {it.qty}
+                </label>
+              </li>
+            ))}
+          </ul>
 
-        return (
-          <div key={order.id} className="card">
-            <ul>
-              {list.map((it, i) => (
-                <li key={i}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={selected[order.id]?.has(i) || false}
-                      onChange={() => toggle(order.id, i)}
-                    />
-                    {it.name} × {it.qty}
-                  </label>
-                </li>
-              ))}
-            </ul>
-
-            <div className="btn-row">
-              <button
-                className="done"
-                onClick={() => complete(order, list)}
-              >
-                ✅ 完成
-              </button>
-              <button
-                className="del"
-                onClick={() => remove(order, list)}
-              >
-                🗑️ 刪除
-              </button>
-            </div>
+          <div className="btn-row">
+            <button className="done" onClick={() => finish(ord)}>✅ 完成</button>
+            <button className="edit" onClick={() => revise(ord)}>✏️ 修正</button>
+            <button className="del"  onClick={() => remove(ord)}>🗑️ 刪除</button>
           </div>
-        );
-      })}
+        </div>
+      ))}
 
       {orders.length === 0 && (
-        <p className="empty">（目前沒有待製作的餐點）</p>
+        <p className="empty">（目前沒有訂單）</p>
       )}
     </div>
   );
 }
+
