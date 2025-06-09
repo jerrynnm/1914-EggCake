@@ -35,3 +35,31 @@ export async function createOrder(items, extra = {}) {
     ...extra
   });
 }
+import { createOrder } from "../services/orderService"; // 路徑依實際調整
+
+// …中略
+
+const sendCart = async () => {
+  try {
+    // 1. 把你畫面上的資料整理成 items 陣列
+    //    例如 cart = [{name:"原味雞蛋糕", qty:1}]
+    const items = cart.map(c => ({ name: c.name, qty: c.qty }));
+
+    // 2. 其他想帶的欄位（備註、類型…）
+    const extra = {
+      note: noteText,  // 來自 textarea
+      type: itemType   // 原味 / 特價綜合 / 內餡
+    };
+
+    // 3. 呼叫 service
+    await createOrder(items, extra);
+
+    // 4. 清空畫面
+    setCart([]);
+    setNoteText("");
+    alert("已送單！");
+  } catch (err) {
+    console.error(err);
+    alert("送單失敗，請稍後再試");
+  }
+};
