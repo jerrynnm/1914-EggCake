@@ -1,8 +1,6 @@
 // src/pages/OrderPage.jsx
 import React, { useState } from "react";
 import "./OrderPage.css";
-import { createOrder } from "../services/orderService";   // ← ▲▲ 改這裡
-                                                     // 若路徑不同請自行調整
 const TYPES   = ["原味", "特價綜合", "內餡"];
 const FLAVORS = ["起士", "奧利奧", "黑糖"];
 
