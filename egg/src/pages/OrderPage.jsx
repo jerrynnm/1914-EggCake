@@ -16,138 +16,93 @@ export default function OrderPage() {
   const comboTotal = Object.values(comboCounts).reduce((a, b) => a + b, 0);
   const fillingTotal = Object.values(fillingCounts).reduce((a, b) => a + b, 0);
 
-  const changePlain = delta => setPlainCount(p => Math.max(1, p + delta));
+  /* --- handlers --- */
+  const changePlain = d => setPlainCount(p => Math.max(1, p + d));
   const changeCombo = (fl, d) => setComboCounts(p => ({ ...p, [fl]: Math.max(0, p[fl] + d) }));
-  const changeFilling = (fl, d) => setFillingCounts(p => ({ ...p, [fl]: Math.max(0, p[fl] + d) }));
+  const changeFill  = (fl, d) => setFillingCounts(p => ({ ...p, [fl]: Math.max(0, p[fl] + d) }));
 
   const resetCounts = () => {
-    if (itemType === "原味") setPlainCount(1);
-    if (itemType === "特價綜合") setComboCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
-    if (itemType === "內餡") setFillingCounts({ 起士: 0, 奧利奧: 0, 黑糖: 0 });
+    if (itemType==='原味') setPlainCount(1);
+    if (itemType==='特價綜合') setComboCounts({ 起士:0, 奧利奧:0, 黑糖:0 });
+    if (itemType==='內餡')   setFillingCounts({ 起士:0, 奧利奧:0, 黑糖:0 });
     setNote("");
   };
 
-  const handleAddToCart = () => {
-    let item = { type: itemType, note };
-    if (itemType === "原味") item.count = plainCount;
-    if (itemType === "特價綜合") {
-      if (comboTotal !== 3) return alert("請選滿3顆");
-      item.flavors = { ...comboCounts };
-    }
-    if (itemType === "內餡") {
-      if (fillingTotal !== 3) return alert("請選滿3顆");
-      item.flavors = { ...fillingCounts };
-    }
-    setCart(c => [...c, item]);
-    resetCounts();
+  const addToCart = () => {
+    let itm={ type:itemType, note };
+    if (itemType==='原味') itm.count = plainCount;
+    if (itemType==='特價綜合') { if (comboTotal!==3) return alert('請選滿3顆'); itm.flavors={...comboCounts}; }
+    if (itemType==='內餡') { if (fillingTotal!==3) return alert('請選滿3顆'); itm.flavors={...fillingCounts}; }
+    setCart(c=>[...c,itm]); resetCounts();
   };
 
-  const handleDirectSend = () => {
-    let item = { type: itemType, note };
-    if (itemType === "原味") item.count = plainCount;
-    if (itemType === "特價綜合") item.flavors = { ...comboCounts };
-    if (itemType === "內餡") item.flavors = { ...fillingCounts };
-    alert("已直接送出");
-    resetCounts();
-  };
+  const directSend = () => { alert('已直接送出'); resetCounts(); };
 
-  const toggleSelect = i => setSelected(s => (s.includes(i) ? s.filter(x => x !== i) : [...s, i]));
+  const toggle = idx => setSelected(s=>s.includes(idx)?s.filter(i=>i!==idx):[...s,idx]);
 
-  const handleSendCart = () => {
-    if (!cart.length) return alert("購物車為空");
-    alert("購物車訂單已送出");
-    setCart([]); setSelected([]);
-  };
+  const sendCart = () => { if(!cart.length) return alert('購物車空'); alert('已送出'); setCart([]); setSelected([]); };
+  const deleteOrClear = () => { setCart(c=>selected.length?c.filter((_,i)=>!selected.includes(i)):[]); setSelected([]); };
 
-  const handleDelete = () => {
-    if (selected.length) setCart(c => c.filter((_, idx) => !selected.includes(idx)));
-    else setCart([]);
-    setSelected([]);
-  };
+  /* --- render helpers --- */
+  const renderNumberRow = (label, value, minusDisabled, plusDisabled, onMinus, onPlus)=> (
+    <div className="number-row" key={label}>
+      <span className="flavor-label">{label}</span>
+      <button className="num-btn" onClick={onMinus} disabled={minusDisabled}>-</button>
+      <span className="num-display">{value}</span>
+      <button className="num-btn" onClick={onPlus} disabled={plusDisabled}>+</button>
+    </div>
+  );
 
   return (
     <div className="order-container">
       {/* Tabs */}
       <div className="tabs">
-        {TYPES.map(type => (
-          <button
-            key={type}
-            className={`tab-btn ${itemType === type ? 'active' : ''}`}
-            onClick={() => setItemType(type)}
-          >
-            {type}
-            {type !== '原味' && `（共${type==='特價綜合'?comboTotal:fillingTotal}/3）`}
+        {TYPES.map(t=> (
+          <button key={t} className={`tab-btn ${itemType===t?'active':''}`} onClick={()=>setItemType(t)}>
+            {t}{t!=='原味' && `（共${t==='特價綜合'?comboTotal:fillingTotal}/3）`}
           </button>
         ))}
       </div>
 
-      {/* Quantity Selector */}
+      {/* Selector */}
       <div className="selector">
-        {itemType === '原味' ? (
-          <div className="number-row">
-            起士
-            <button className="num-btn" onClick={() => changePlain(-1)}>-</button>
-            <span className="num-display">{plainCount}</span>
-            <button className="num-btn" onClick={() => changePlain(1)}>+</button>
-          </div>
-        ) : (
-          FLAVORS.map(flavor => (
-            <div key={flavor} className="number-row">
-              {flavor}
-              <button
-                className="num-btn"
-                onClick={() => (itemType==='特價綜合'?changeCombo(flavor,-1):changeFilling(flavor,-1))}
-                disabled={(itemType==='特價綜合'&&comboCounts[flavor]===0)||(itemType==='內餡'&&fillingCounts[flavor]===0)}
-              >-</button>
-              <span className="num-display">{itemType==='特價綜合'?comboCounts[flavor]:fillingCounts[flavor]}</span>
-              <button
-                className="num-btn"
-                onClick={() => (itemType==='特價綜合'?changeCombo(flavor,1):changeFilling(flavor,1))}
-                disabled={(itemType==='特價綜合'&&comboTotal>=3)||(itemType==='內餡'&&fillingTotal>=3)}
-              >+</button>
-            </div>
-          ))
-        )}
+        {itemType==='原味' && renderNumberRow('份數', plainCount, false, false, ()=>changePlain(-1), ()=>changePlain(1))}
+        {itemType==='特價綜合' && FLAVORS.map(fl=>renderNumberRow(fl, comboCounts[fl], comboCounts[fl]===0, comboTotal>=3, ()=>changeCombo(fl,-1), ()=>changeCombo(fl,1)))}
+        {itemType==='內餡' && FLAVORS.map(fl=>renderNumberRow(fl, fillingCounts[fl], fillingCounts[fl]===0, fillingTotal>=3, ()=>changeFill(fl,-1), ()=>changeFill(fl,1)))}
       </div>
 
       {/* Note */}
-      <input
-        type="text"
-        className="note-input"
-        placeholder="備註..."
-        value={note}
-        onChange={e => setNote(e.target.value)}
-      />
+      <input className="note-input" value={note} placeholder="備註…" onChange={e=>setNote(e.target.value)}/>
 
-      {/* Main Actions: Join Cart between Direct and CartSubmit */}
+      {/* First action row */}
       <div className="actions-row">
-        <button className="action-btn direct" onClick={handleDirectSend}>🚀 直接送出</button>
-        <button className="action-btn cart" onClick={handleAddToCart}>🛒 加入購物車</button>
-        {cart.length>0 && (
-          <>
-            <button className="action-btn send" onClick={handleSendCart}>🚀 送出購物車訂單</button>
-            <button className="action-btn clear" onClick={handleDelete}>🗑️ {selected.length?'刪除選取':'清空購物車'}</button>
-          </>
-        )}
+        <button className="action-btn" onClick={directSend}>🚀 直接送出</button>
+        <button className="action-btn" onClick={addToCart}>🛒 加入購物車</button>
       </div>
 
-      {/* Cart List */}
-      <div className="cart-list">
-        {cart.map((it, idx) => (
-          <label key={idx} className="cart-item">
-            <input
-              type="checkbox"
-              checked={selected.includes(idx)}
-              onChange={() => toggleSelect(idx)}
-            />
-            <span>
-              {it.type==='原味'?`原味：${it.count}份`:
-               Object.entries(it.flavors).filter(([,v])=>v>0).map(([k,v])=>`${k}×${v}`).join('、')}
-              {it.note?`（${it.note}）`:''}
-            </span>
-          </label>
-        ))}
-      </div>
+      {/* Cart list (between two button groups) */}
+      {cart.length>0 && (
+        <div className="cart-list">
+          {cart.map((it,i)=>(
+            <label key={i} className="cart-item">
+              <input type="checkbox" checked={selected.includes(i)} onChange={()=>toggle(i)}/>
+              <span>
+                {it.type==='原味'?`原味：${it.count}份`:
+                  Object.entries(it.flavors).filter(([,v])=>v>0).map(([k,v])=>`${k}×${v}`).join('、')}
+                {it.note?`（${it.note}）`:''}
+              </span>
+            </label>
+          ))}
+        </div>
+      )}
+
+      {/* Second action row (delete left, send right) */}
+      {cart.length>0 && (
+        <div className="cart-actions">
+          <button className="action-btn" onClick={deleteOrClear}>🗑️ {selected.length?"刪除選取":"清空購物車"}</button>
+          <button className="action-btn" onClick={sendCart}>🚀 送出購物車訂單</button>
+        </div>
+      )}
     </div>
   );
 }
