@@ -1,5 +1,7 @@
+// src/pages/OrderPage.jsx
 import React, { useState } from "react";
 import "./OrderPage.css";
+import { addOrder } from "../firebase";  // ← 新增引入
 
 const TYPES   = ["原味", "特價綜合", "內餡"];
 const FLAVORS = ["起士", "奧利奧", "黑糖"];
@@ -29,36 +31,76 @@ export default function OrderPage() {
     setNote("");
   };
 
+  // 將單筆訂單推到 Firestore
+  const pushOrder = async (itm) => {
+    try {
+      await addOrder(itm);
+    } catch (err) {
+      console.error("Add order failed:", err);
+      alert("送出訂單失敗");
+    }
+  };
+
   const addToCart = () => {
     const itm = { type: itemType, note };
     if (itemType === "原味") itm.count = plainCount;
     if (itemType === "特價綜合") {
       if (comboTotal !== 3) return alert("請選滿 3 顆");
-      itm.flavors = { ...comboCounts };
+      itm.comboCounts = { ...comboCounts };
     }
     if (itemType === "內餡") {
       if (fillingTotal !== 3) return alert("請選滿 3 顆");
-      itm.flavors = { ...fillingCounts };
+      itm.fillingCounts = { ...fillingCounts };
     }
     setCart(c => [...c, itm]);
     resetCounts();
   };
 
-  const directSend    = () => { alert("已直接送出"); resetCounts(); };
-  const toggleSelect  = i => setSelected(s => s.includes(i) ? s.filter(x=>x!==i) : [...s,i]);
-  const sendCart      = () => { if (!cart.length) return alert("購物車空"); alert("已送出"); setCart([]); setSelected([]); };
+  // 直接送出單筆
+  const directSend = () => {
+    const itm = { type: itemType, note };
+    if (itemType === "原味") itm.count = plainCount;
+    if (itemType === "特價綜合") {
+      if (comboTotal !== 3) return alert("請選滿 3 顆");
+      itm.comboCounts = { ...comboCounts };
+    }
+    if (itemType === "內餡") {
+      if (fillingTotal !== 3) return alert("請選滿 3 顆");
+      itm.fillingCounts = { ...fillingCounts };
+    }
+    pushOrder(itm);
+    resetCounts();
+    alert("已直接送出");
+  };
+
+  const toggleSelect = i => setSelected(s => s.includes(i) ? s.filter(x=>x!==i) : [...s,i]);
+
+  // 送出並清空購物車
+  const sendCart = () => {
+    if (!cart.length) return alert("購物車空");
+    cart.forEach(itm => pushOrder(itm));
+    setCart([]);
+    setSelected([]);
+    alert("已送出購物車訂單");
+  };
+
   const deleteOrClear = () => { 
-    setCart(c => selected.length ? c.filter((_, i) => !selected.includes(i)) : []); 
+    setCart(c => selected.length 
+      ? c.filter((_, i) => !selected.includes(i)) 
+      : []
+    ); 
     setSelected([]);
   };
 
   const getItemLabel = it => {
     if (it.type === "原味") return `原味：${it.count}份`;
-    const flavorStr = Object.entries(it.flavors)
+    const entries = it.comboCounts ?? it.fillingCounts;
+    const flavorStr = Object.entries(entries)
       .filter(([,v])=>v>0)
       .map(([k,v])=>`${k}×${v}`)
       .join("、");
-    return (it.type==="特價綜合"?"特綜：":"內餡：") + flavorStr;
+    const prefix = it.type === "特價綜合" ? "特綜：" : "內餡：";
+    return prefix + flavorStr;
   };
 
   const renderNumberRow = (label, val, minusD, plusD, onMinus, onPlus) => (
