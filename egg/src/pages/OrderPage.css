@@ -1,88 +1,155 @@
-/* ============ 頂端 3 顆功能鍵 ============ */
-.top-nav {                         /* 外層容器 */
+/* ========================= OrderPage 全面樣式 ========================= */
+
+/* ===== 頂端三顆功能鍵（點餐／製作／完成） ===== */
+.top-nav {
   display: flex;
   gap: 8px;
   margin-bottom: 12px;
+  width: 100%;
 }
 .top-nav button {
-  flex: 1;                         /* 平分整行 */
-  min-width: 0;
-  padding: 14px 0;                 /* 高度放大 */
-  font-size: 18px;                 /* 字更大 */
+  flex: 1;                 /* 平分整列 */
+  min-width: 0;            /* 允許收縮 */
+  padding: 16px 0;         /* 高度放大 */
+  font-size: 20px;         /* 字體放大 */
   border-radius: 28px;
+  border: 1px solid #ccc;
   background: #f5f5f5;
   color: #007bff;
-  border: 1px solid #ccc;
 }
 .top-nav button.active {
-  background: #007bff; color:#fff; border-color:#007bff;
+  background: #007bff;
+  color: #fff;
+  border-color: #007bff;
 }
 
-/* ============ Tabs（原味/特價綜合/內餡） ============ */
-.tabs { display:flex; gap:8px; margin-bottom:12px; }
+/* ===== Tabs（原味／特價綜合／內餡） ===== */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
 .tab-btn {
-  flex:1; min-width:80px; padding:10px 0; font-size:17px;
-  border-radius:22px; border:1px solid #ccc; background:#f5f5f5; color:#007bff;
+  flex: 1;
+  min-width: 80px;
+  padding: 10px 0;
+  font-size: 17px;
+  border-radius: 22px;
+  background: #f5f5f5;
+  border: 1px solid #ccc;
+  color: #007bff;
+  text-align: center;
 }
-.tab-btn.active { background:#007bff; color:#fff; border-color:#007bff; }
-
-/* ============ 數量選擇（直排＋置中） ============ */
-.selector{
-  display:flex; flex-direction:column; align-items:center;
-  gap:18px; margin-bottom:18px;
-}
-.number-row{
-  display:flex; align-items:center; justify-content:center;
-  gap:18px; width:100%;
-}
-.flavor-label{
-  width:72px; text-align:right;   /* 固定寬 & 右對齊，字就對齊了 */
-  font-size:18px;
-}
-.num-btn{
-  width:50px; height:50px; font-size:24px; border-radius:25px;
-  background:#e5e5e5; border:none; color:#007bff;
-}
-.num-btn:disabled{color:#aaa;}
-.num-display{font-size:22px; min-width:34px; text-align:center;}
-
-/* ============ 備註輸入 ============ */
-.note-input{
-  width:100%; max-width:100%; box-sizing:border-box;
-  padding:12px; font-size:16px; margin-bottom:18px;
-  border:1px solid #ccc; border-radius:8px;
+.tab-btn.active {
+  background: #007bff;
+  color: #fff;
+  border-color: #007bff;
 }
 
-/* ============ 第一列按鈕（直接送出／加入購物車） ============ */
-.actions-row{
-  display:flex; gap:12px; justify-content:center;
-  flex-wrap:nowrap;                 /* 關鍵：永遠同一行 */
-  margin-bottom:14px;
+/* ===== 數量選擇區 ===== */
+.selector {
+  display: flex;
+  flex-direction: column;      /* 直排 */
+  align-items: center;         /* 置中 */
+  gap: 18px;
+  margin-bottom: 18px;
 }
-.action-btn{
-  flex:1; min-width:120px; padding:16px 0; font-size:18px; border:none; border-radius:10px; color:#fff;
+.number-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;     /* 整行置中 */
+  gap: 18px;
+  width: 100%;
 }
-.action-btn.direct{background:#17a2b8;}
-.action-btn.cart {background:#ffc107; color:#212529;}
-
-/* ============ 購物車清單、第二列按鈕 ============ */
-.cart-list{margin:16px 0 12px;}
-.cart-item{display:flex; align-items:center; gap:10px; font-size:18px; margin-bottom:8px;}
-.cart-item input{width:28px; height:28px;}
-
-.cart-actions{
-  display:flex; gap:12px; justify-content:center;
-  flex-wrap:nowrap;                 /* 永遠並排 */
-  margin-bottom:12px;
+.flavor-label {
+  width: 80px;                 /* 固定寬度讓文字對齊 */
+  text-align: right;
+  font-size: 18px;
 }
-.cart-actions .action-btn{flex:1; min-width:140px;}
-.action-btn.clear{background:#dc3545;}
-.action-btn.send {background:#28a745;}
-
-/* ============ 小螢幕微調 (選用) ============ */
-@media (max-width:430px){
-  .num-btn     { width:46px; height:46px; font-size:22px; }
-  .action-btn  { font-size:16px; padding:14px 0; }
-  .flavor-label{ width:64px; font-size:17px; }
+.num-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 26px;
+  font-size: 26px;
+  border: none;
+  background: #e5e5e5;
+  color: #007bff;
+}
+.num-btn:disabled { color: #aaa; }
+.num-display {
+  min-width: 34px;
+  text-align: center;
+  font-size: 22px;
 }
 
+/* ===== 備註輸入框 ===== */
+.note-input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 18px;
+}
+
+/* ===== 第一列操作按鈕 ===== */
+.actions-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: nowrap;           /* 不換行，確保水平排 */
+  margin-bottom: 18px;
+}
+
+/* ===== 第二列購物車操作按鈕 ===== */
+.cart-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: nowrap;           /* 不換行，確保水平排 */
+  margin-top: 16px;
+  margin-bottom: 12px;
+}
+
+/* ===== 通用大按鈕樣式 ===== */
+.action-btn {
+  flex: 1 1 0;                /* 可收縮、可放大 */
+  min-width: 0;               /* 允許縮到最小 */
+  padding: 16px 0;
+  font-size: 18px;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  text-align: center;
+}
+.action-btn.direct { background: #17a2b8; }
+.action-btn.cart   { background: #ffc107; color: #212529; }
+.action-btn.send   { background: #28a745; }
+.action-btn.clear  { background: #dc3545; }
+.action-btn:disabled { background: #d7d7d7; color: #eee; }
+
+/* ===== 購物車清單 ===== */
+.cart-list {
+  margin: 16px 0 8px;
+}
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+.cart-item input {
+  width: 28px;
+  height: 28px;
+}
+
+/* ===== 小螢幕微調 ===== */
+@media (max-width: 430px) {
+  .num-btn      { width: 48px; height: 48px; font-size: 24px; }
+  .action-btn   { font-size: 16px; padding: 14px 0; }
+  .flavor-label { width: 72px; font-size: 17px; }
+}
