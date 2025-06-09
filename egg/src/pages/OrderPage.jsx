@@ -70,31 +70,6 @@ export default function OrderPage() {
     </div>
   );
 
-  /* -------------------- render -------------------- */
-  return (
-    <div className="order-container">
-      {/* ====== 最上方三分頁按鈕 ====== */}
-      <div className="top-nav">
-        <button
-          className={page === "點餐" ? "active" : ""}
-          onClick={() => setPage("點餐")}
-        >
-          🛒 點餐
-        </button>
-        <button
-          className={page === "製作" ? "active" : ""}
-          onClick={() => setPage("製作")}
-        >
-          🔍 製作
-        </button>
-        <button
-          className={page === "完成" ? "active" : ""}
-          onClick={() => setPage("完成")}
-        >
-          ✅ 完成
-        </button>
-      </div>
-
       {/* 如果未在「點餐」頁，就顯示提示文字或其他內容 */}
       {page !== "點餐" ? (
         <div style={{ textAlign: "center", marginTop: "50px", color: "#666" }}>
