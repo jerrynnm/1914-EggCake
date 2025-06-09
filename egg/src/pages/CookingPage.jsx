@@ -1,4 +1,3 @@
-// src/pages/CookingPage.jsx
 import { useEffect, useState } from "react";
 import "./CookingPage.css";
 import { db } from "../firebase";
@@ -7,31 +6,30 @@ import {
   doc, updateDoc, deleteDoc, serverTimestamp
 } from "firebase/firestore";
 
-// 把任意格式轉成 [{ name, qty }]
+// 將任何格式文件轉成 [{ name, qty }]
 const toList = (d) => {
   if (Array.isArray(d.items) && d.items.length) return d.items;
   if (d.plainCount) return [{ name: "原味雞蛋糕", qty: d.plainCount }];
   const list = [];
   ["comboCounts", "fillingCounts"].forEach(k => {
-    if (d[k])
-      Object.entries(d[k]).forEach(([fl, c]) => {
-        if (c > 0) list.push({ name: `${fl}雞蛋糕`, qty: c });
-      });
+    if (d[k]) Object.entries(d[k]).forEach(([fl, c]) => {
+      if (c > 0) list.push({ name: `${fl}雞蛋糕`, qty: c });
+    });
   });
   return list.length ? list : [{ name: "未知餐點", qty: 1 }];
 };
 
 export default function CookingPage() {
-  const [orders, setOrders] = useState([]);   // [{ id, list }]
-  const [selected, setSel]  = useState({});   // { id:Set(idx) }
+  const [orders, setOrders] = useState([]);
+  const [selected, setSel]  = useState({});
 
-  /* 監聽待製作 */
+  /* 📡 監聽待製作（需複合索引：status asc, createdAt asc）*/
   useEffect(() => {
-    console.log("🍳 New CookingPage loaded");       // <-- 用來驗證新版本
+    console.log("🍳 New CookingPage loaded");       // ← 用這行來驗證新版
     const q = query(
       collection(db, "orders"),
       where("status", "==", "pending"),
-      orderBy("createdAt", "asc")                   // ★ 需要複合索引
+      orderBy("createdAt", "asc")
     );
     const unsub = onSnapshot(q, snap => {
       setOrders(
@@ -41,7 +39,7 @@ export default function CookingPage() {
     return () => unsub();
   }, []);
 
-  /* 勾 / 取消勾 */
+  /* 勾選 */
   const toggle = (oid, idx) =>
     setSel(p => {
       const s = new Set(p[oid] || []);
@@ -83,7 +81,7 @@ export default function CookingPage() {
     setSel(p => ({ ...p, [o.id]: new Set() }));
   };
 
-  /* UI */
+  /* -------- UI -------- */
   return (
     <div className="cook-wrap">
       {orders.map(o => (
@@ -108,10 +106,7 @@ export default function CookingPage() {
           </div>
         </div>
       ))}
-
-      {orders.length === 0 && (
-        <p className="empty">（目前沒有訂單）</p>
-      )}
+      {orders.length === 0 && <p className="empty">（目前沒有訂單）</p>}
     </div>
   );
 }
