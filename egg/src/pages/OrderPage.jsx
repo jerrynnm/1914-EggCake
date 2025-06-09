@@ -1,6 +1,14 @@
 // src/pages/OrderPage.jsx
 import React, { useState } from "react";
 import "./OrderPage.css";
+
+import { db } from "../firebase";
+import {
+  addDoc,
+  collection,
+  serverTimestamp
+} from "firebase/firestore";
+
 const TYPES   = ["原味", "特價綜合", "內餡"];
 const FLAVORS = ["起士", "奧利奧", "黑糖"];
 
@@ -30,9 +38,10 @@ export default function OrderPage() {
     setNote("");
   };
 
-  /* ❶ 整理成 { items, extra } 結構 */
+  /* ❶ 將畫面選擇整理為 { items, extra } 結構 */
   const buildOrder = () => {
     const items = [];
+
     if (itemType === "原味") {
       if (plainCount <= 0) return alert("份數必須 ≥1");
       items.push({ name: "原味雞蛋糕", qty: plainCount });
@@ -61,10 +70,15 @@ export default function OrderPage() {
   /* ❷ 寫入 Firestore（單筆） */
   const pushOrder = async ({ items, extra }) => {
     try {
-      await createOrder(items, extra);
+      await addDoc(collection(db, "orders"), {
+        items,
+        status: "pending",
+        createdAt: serverTimestamp(),
+        ...extra
+      });
     } catch (err) {
       console.error(err);
-      alert("傳送訂單到 Firebase 失敗");
+      alert("寫入 Firestore 失敗");
     }
   };
 
